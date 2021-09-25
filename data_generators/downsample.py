@@ -43,7 +43,7 @@ def downsample(dfs, n_samples):
             if len(unique_mutations)==n_samples: 
                 return pd.concat(entries, ignore_index=True)
             
-            temp_df = dfs[dfs["seq_len"]==seq_len].sample(n=1, replace=False)
+            temp_df = dfs[dfs["wild_structure_seq_len"]==seq_len].sample(n=1, replace=False)
             mutation_key = temp_df["pdb_id"].values[0] + temp_df["inverse_pdb_id"].values[0]
             
             if mutation_key not in unique_mutations:
@@ -58,7 +58,7 @@ def downsample(dfs, n_samples):
 ssym_classified_dfs = pd.read_excel(input_filepath)
 # print(ssym_classified_dfs["is_destabilizing"])
 
-stabilizing_dfs = ssym_classified_dfs[ssym_classified_dfs["is_destabilizing"] == False]
+stabilizing_dfs = ssym_classified_dfs[ssym_classified_dfs["is_destabilizing"] == False ]
 destabilizing_dfs = ssym_classified_dfs[ssym_classified_dfs["is_destabilizing"] == True]
 print(get_freq_by_seq_len(stabilizing_dfs))
 print(get_freq_by_seq_len(destabilizing_dfs))

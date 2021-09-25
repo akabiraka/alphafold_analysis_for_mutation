@@ -4,9 +4,6 @@ sys.path.append("../alphafold_analysis_for_mutation")
 import pandas as pd
 import subprocess
 
-def run_command(command):
-   return subprocess.getoutput(command)
-
 # configs
 stabilizing_downsampled_dfs_filepath = "data/ssym_downsampled_stabilizing.xlsx"
 destabilizing_downsampled_dfs_filepath = "data/ssym_downsampled_destabilizing.xlsx"
@@ -30,7 +27,19 @@ print(len(destabilizing_downsampled_inverse_pdb_list), destabilizing_downsampled
 # 10 ['2lzm', '1l63', '1ihb', '2rn2', '1ey0', '1lz1', '4lyz', '1cey', '1oh0', '1rn1']
 # 40 ['1l33', '255l', '1mx2', '3aa3', '1syc', '1gfu', '1hem', '1e6l', '1dmq', '1rgc', '1l57', '1l59', '1rda', '2ey6', '1inu', '1l19', '115l', '1lav', '1ey5', '1e6m', '1l20', '1l68', '1kvc', '1kab', '149l', '1rbu', '1ios', '110l', '1rbs', '1sye', '1lhh', '1rdc', '1gby', '109l', '1e6k', '1l42', '3aa2', '1ey7', '1ouc', '1dyg']
 
-for pdb_id in destabilizing_downsampled_inverse_pdb_list:
-    print(pdb_id)
-    command = "cp ../protein_data/data/pdbs_clean/{}* data/pdbs/".format(pdb_id)
-    run_command(command=command)
+
+def run_command(command):
+   return subprocess.getoutput(command)
+
+def copy_pdb_fasta(pdb_list):
+   for pdb_id in pdb_list:
+      print(pdb_id)
+      pdb_copy_command = "cp ../protein_data/data/pdbs_clean/{}* data/pdbs/".format(pdb_id)
+      run_command(command=pdb_copy_command)
+      fasta_copy_command = "cp ../protein_data/data/fastas/{}_from_structure.fasta* data/fastas/".format(pdb_id)
+      run_command(command=fasta_copy_command)
+    
+copy_pdb_fasta(stabilizing_downsampled_pdb_list)
+copy_pdb_fasta(stabilizing_downsampled_inverse_pdb_list)
+copy_pdb_fasta(destabilizing_downsampled_pdb_list)
+copy_pdb_fasta(destabilizing_downsampled_inverse_pdb_list)
