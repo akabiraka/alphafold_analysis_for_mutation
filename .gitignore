@@ -130,3 +130,5 @@ dmypy.json
 
 data/fastas/*
 data/pdbs/*
+data/pdbs_alphafold_predicted/*
+outputs/*
