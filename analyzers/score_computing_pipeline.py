@@ -9,7 +9,8 @@ from TMScore import TMScore
 
 pdb_dir = "data/pdbs/"
 alphafold_predicted_pdb_dir = "data/pdbs_alphafold_predicted/"
-n_proteins_to_evaluate = 10
+# alphafold_predicted_pdb_dir = "data/test/"
+n_proteins_to_evaluate = 1000
 
 gdt_score = GDTScore()
 rms_score = RMSScore()
@@ -25,7 +26,7 @@ def run_score_pipeline(ref_pdb_filepath, sample_pdb_filepath):
 def parse_settings_file(filepath):
     settings_handle = open(filepath, 'r')
     lines = settings_handle.readlines()
-    seq = lines.__getitem__(1)[9:]
+    seq = lines.__getitem__(1).rstrip('\n')[9:]
     data = []
     for line in lines:
         if line.startswith("rank_") and not line.startswith("rank_by"):
@@ -41,17 +42,20 @@ def parse_settings_file(filepath):
 # parse_settings_file(settings_filepath)
 
 
-ith_protein=1
+ith_protein=0
+bad_proteins = set()
+all_proteins = set()
 # for each pdb file
 for pdb_file in listdir(pdb_dir):
     structure_comparison_data = []
     if pdb_file.endswith(".pdb"):
         pdb_id = pdb_file[:4].lower()
-        chain_id = pdb_file[4:5]
-        print("Start processing: ",ith_protein, pdb_id+chain_id)
+        chain_id = pdb_file[4:5]    
         # for each alphafold predicted collection pdbs directory
         for pdb_alphafold_dir in listdir(alphafold_predicted_pdb_dir):
             if "_"+pdb_id+"_" in pdb_alphafold_dir.lower():
+                print("Start processing: ",ith_protein+1, pdb_id+chain_id)
+                all_proteins.add(pdb_id+chain_id)
                 # for each pdb predicted by alphafold corresponding to the pdb file
                 for pdb_alphafold_file in listdir(alphafold_predicted_pdb_dir+pdb_alphafold_dir+"/"):
                     if pdb_alphafold_file.endswith(".pdb"):
@@ -60,8 +64,13 @@ for pdb_file in listdir(pdb_dir):
                         ref_pdb_filepath = pdb_dir+pdb_id+chain_id+".pdb" #"data/pdbs/1amqA.pdb"
                         sample_pdb_filepath = alphafold_predicted_pdb_dir+pdb_alphafold_dir+"/"+pdb_alphafold_file #"data/pdbs_alphafold_predicted/prediction_1AMQ_e9684/rank_1_model_3_ptm_seed_0_unrelaxed.pdb"
                         # compute the scores
-                        tms, maxsub, rms, gdt_ts, gdt_ha = run_score_pipeline(ref_pdb_filepath, sample_pdb_filepath)
-                        structure_comparison_data.append([pdb_file[:-4], pdb_alphafold_file[:-4], tms, rms, maxsub, gdt_ts, gdt_ha])
+                        try:
+                            tms, maxsub, rms, gdt_ts, gdt_ha = run_score_pipeline(ref_pdb_filepath, sample_pdb_filepath)
+                            structure_comparison_data.append([pdb_file[:-4], pdb_alphafold_file[:-4], tms, rms, maxsub, gdt_ts, gdt_ha])
+                        except Exception:
+                            bad_proteins.add(pdb_id+chain_id)
+                            # print("xxx---error occured---xxx")    
+                            continue
                 
                 # parse data from settings, i.e plddt and ptmScore, for each alphafold predicted pdbs directory 
                 settings_filepath = alphafold_predicted_pdb_dir+pdb_alphafold_dir+"/settings.txt"
@@ -79,9 +88,11 @@ for pdb_file in listdir(pdb_dir):
                 print("Finished processing: ", pdb_id+chain_id)
                 all_scores_dfs = pd.merge(left=structure_comparison_dfs, right=settings_dfs, how='left', left_on='pdb_alphafold_filename', right_on='pdb_alphafold_filename')
                 all_scores_dfs.to_excel("outputs/"+pdb_id+chain_id+".xlsx", index=False)                
-        #         break    
-        # break 
+     
+                ith_protein=ith_protein+1
+
     if ith_protein == n_proteins_to_evaluate:
-        break    
-    ith_protein=ith_protein+1
-         
+        break
+print("bad_proteins: ", bad_proteins)     
+print("all_proteins: ", all_proteins)      
+print("keep this: ", all_proteins-bad_proteins)         

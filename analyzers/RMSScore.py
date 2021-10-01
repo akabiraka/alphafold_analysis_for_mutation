@@ -53,10 +53,10 @@ class RMSScore(object):
         return self.super_imposer.rms
 
 
-# # sample usage
+# sample usage
 # rms_score = RMSScore()
 
-# # 1mx4 prediction_1MX4_21f84 rank_10_model_4_ptm_seed_4_unrelaxed.pdb
+# 1mx4 prediction_1MX4_21f84 rank_10_model_4_ptm_seed_4_unrelaxed.pdb
 # ref_pdb_filepath = "data/pdbs/1mx4A.pdb"
 # sample_pdb_filepath = "data/pdbs_alphafold_predicted/prediction_1MX4_21f84/rank_10_model_4_ptm_seed_4_unrelaxed.pdb"
 
