@@ -37,14 +37,29 @@ configs = [{
 ]
 
 
-def get_mutation_site_vs_statistics(statistics_name="median", 
-                                         ylabel="Median", 
-                                         filename="mutation_site_vs_median_plddt_confidence",
-                                         do_plot=False):
-    wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_site_plddt_statistics.xlsx")
-    mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_site_plddt_statistics.xlsx")
-    
+def get_mutation_site_vs_statistics(wt_plddt_statistics_df, 
+                                    mt_plddt_statistics_df,
+                                    statistics_name="median", 
+                                    ylabel="Median", 
+                                    filename="mutation_site_vs_median_plddt_confidence",
+                                    do_plot=False,
+                                    neighbor=0):
+    """[summary]
 
+    Args:
+        wt_plddt_statistics_df ([type]): [description]
+        mt_plddt_statistics_df ([type]): [description]
+        statistics_name (str, optional): [description]. Defaults to "median".
+        ylabel (str, optional): [description]. Defaults to "Median".
+        filename (str, optional): [description]. Defaults to "mutation_site_vs_median_plddt_confidence".
+        do_plot (bool, optional): [description]. Defaults to False.
+        neighbor (int, optional): [description]. Defaults to 0.
+
+    Returns:
+        [type]: [description]
+    """
+    # wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_site_plddt_statistics.xlsx")
+    # mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_site_plddt_statistics.xlsx")
     x_wt_mutation_site = wt_plddt_statistics_df["mutation_site"].astype(int)
     y_wt_plddt_stat = wt_plddt_statistics_df[statistics_name].astype(float)
     x_mt_mutation_site = mt_plddt_statistics_df["mutation_site"].astype(int)
@@ -62,10 +77,10 @@ def get_mutation_site_vs_statistics(statistics_name="median",
             ax.label_outer()
         plt.legend(loc="best")
         plt.xlabel("Mutation site")
-        plt.ylabel("Confidence PLDDT ({})".format(ylabel))
-        plt.show()
-        # plt.savefig("output_images/mutation_site_specific_confidence_plots/{}.pdf".format(filename), dpi=300, format="pdf")
-        # plt.close()
+        plt.ylabel("Confidence PLDDT ({})".format(ylabel.lower()))
+        # plt.show()
+        plt.savefig("output_images/mutation_site_specific_confidence_plots/{}_{}_neighbor.pdf".format(filename, neighbor), dpi=300, format="pdf")
+        plt.close()
     
     return x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat
 
@@ -163,13 +178,28 @@ def plot_mutation_site_vs_statistics_0():
     plt.show()
 # plot_mutation_site_vs_statistics_0() 
 
-def get_plddt_confidence_score_for_all_WT_proteins(statistics_name="median", 
-                                                  ylabel="Median", 
-                                                  filename="minimum_plddt_confidence_for_each_wt",
-                                                  do_plot=False):
-    
+def get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
+                                                   statistics_name="median", 
+                                                   ylabel="Median", 
+                                                   filename="minimum_plddt_confidence_for_each_wt",
+                                                   do_plot=False,
+                                                   neighbor=0):
+    """It returns the x, y values for plotting confidence vs. WT 
+    as well as single-plots if do_plot is true
+
+    Args:
+        mt_plddt_statistics_df ([type]): [description]
+        statistics_name (str, optional): [description]. Defaults to "median".
+        ylabel (str, optional): [description]. Defaults to "Median".
+        filename (str, optional): [description]. Defaults to "minimum_plddt_confidence_for_each_wt".
+        do_plot (bool, optional): [description]. Defaults to False.
+        neighbor (int, optional): [description]. Defaults to 0.
+
+    Returns:
+        [type]: [description]
+    """
     ssym_classified_full_df = pd.read_excel("data/ssym_classified_full.xlsx")
-    mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_site_plddt_statistics.xlsx")
+    # mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_site_plddt_statistics.xlsx")
     mt_plddt_statistics_df = mt_plddt_statistics_df.rename(columns={"pdb_id": "inverse_pdb_id"})
     mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_df.merge(right=ssym_classified_full_df[["pdb_id", "inverse_pdb_id"]],
                                                                    how="left", left_on="inverse_pdb_id", right_on="inverse_pdb_id", 
@@ -177,9 +207,8 @@ def get_plddt_confidence_score_for_all_WT_proteins(statistics_name="median",
     wt_specific_plddt =[]
     wt_pdb_ids = mt_plddt_statistics_with_wtpdbid_df["pdb_id"].unique()
     for wt_pdb_id in wt_pdb_ids:
-        mask = mt_plddt_statistics_with_wtpdbid_df["pdb_id"]==wt_pdb_id
         x = pd.DataFrame()
-        x[wt_pdb_id] = mt_plddt_statistics_with_wtpdbid_df[mask][statistics_name]
+        x[wt_pdb_id] = mt_plddt_statistics_with_wtpdbid_df[mt_plddt_statistics_with_wtpdbid_df["pdb_id"]==wt_pdb_id][statistics_name]
         wt_specific_plddt.append(x.reset_index(drop=True))
 
     temp_df = pd.DataFrame()
@@ -190,11 +219,12 @@ def get_plddt_confidence_score_for_all_WT_proteins(statistics_name="median",
         temp_df.boxplot(grid=True) 
         plt.legend(loc="best")
         plt.xlabel("Dataset (Wild-type)")
-        plt.ylabel("Confidence PLDDT ({})".format(ylabel))
+        plt.ylabel("Confidence PLDDT ({})".format(ylabel.lower()))
         # plt.show()
-        plt.savefig("output_images/wt_specific_plddt_confidence_plots/{}.pdf".format(filename), dpi=300, format="pdf")
+        plt.savefig("output_images/wt_specific_plddt_confidence_plots/{}_{}_neighbor.pdf".format(filename, neighbor), dpi=300, format="pdf")
         plt.close()
     return temp_df
+  
     
 
 def plot_plddt_confidence_score_for_all_WT_proteins():
@@ -243,25 +273,28 @@ def plot_plddt_confidence_score_for_all_WT_proteins_1():
     plt.savefig("output_images/plddt_confidence_vs_dataset.pdf", dpi=300, format="pdf")
     plt.close()
 
-plot_plddt_confidence_score_for_all_WT_proteins_1()
-plot_mutation_site_vs_statistics_1()
-
-# later solve this
-# grouped_mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_with_wtpdbid_df.groupby(by=["pdb_id"]).mean()
-# grouped_mt_plddt_statistics_with_wtpdbid_df.to_excel("data/xxx.xlsx")
-# print(grouped_mt_plddt_statistics_with_wtpdbid_df.head())
-# print(grouped_mt_plddt_statistics_with_wtpdbid_df.shape)
-# print(grouped_mt_plddt_statistics_with_wtpdbid_df.index)
-
-# indexes = grouped_mt_plddt_statistics_with_wtpdbid_df.index
-# mins = grouped_mt_plddt_statistics_with_wtpdbid_df["min"]
-# maxs = grouped_mt_plddt_statistics_with_wtpdbid_df["max"]
-# avgs = grouped_mt_plddt_statistics_with_wtpdbid_df["avg"]
-# stds = grouped_mt_plddt_statistics_with_wtpdbid_df["std"]
-
-# plt.scatter(mt_plddt_statistics_with_wtpdbid_df["pdb_id"], mt_plddt_statistics_with_wtpdbid_df["avg"])
-# plt.errorbar(indexes, avgs, stds, fmt='o', color="black", ecolor="lightgray", elinewidth=5)#, capsize=6)
-# plt.errorbar(indexes, avgs, [avgs - mins, maxs - avgs], fmt='.', color="black", ecolor='gray', lw=1)
-# plt.show()
+# plot_plddt_confidence_score_for_all_WT_proteins_1()
+# plot_mutation_site_vs_statistics_1()
 
 
+for config in configs:
+    for neighbor in range(3):
+        wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+        mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+        statistics_name = config["statistics_name"]
+        ylabel = config["ylabel"]
+        filename = config["mutation_site_vs_plddt"]
+        do_plot = True
+        get_mutation_site_vs_statistics(wt_plddt_statistics_df, mt_plddt_statistics_df, 
+                                        statistics_name, ylabel, filename, do_plot, neighbor)
+    # break
+    
+for config in configs:
+    for neighbor in range(3):
+        mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+        statistics_name = config["statistics_name"]
+        ylabel = config["ylabel"]
+        filename = config["mutation_site_vs_plddt"]
+        do_plot = True
+        get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
+                                        statistics_name, ylabel, filename, do_plot, neighbor)
