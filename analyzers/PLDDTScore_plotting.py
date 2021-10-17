@@ -257,7 +257,7 @@ def plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df, ylab
     maxs = grouped_mt_plddt_statistics_with_wtpdbid_df["max"]
     means = grouped_mt_plddt_statistics_with_wtpdbid_df["avg"]
     stds = grouped_mt_plddt_statistics_with_wtpdbid_df["std"]
-    plt.errorbar(pdb_ids, means, stds, color="green", fmt=".", ecolor="lightgreen", elinewidth=4) #, label="Wildtype"
+    plt.errorbar(pdb_ids, means, stds, color="green", fmt=".", ecolor="lightgreen", elinewidth=4, label="Wildtype")
     plt.errorbar(pdb_ids, means, yerr=[means-mins, maxs-means], fmt='.', color="green", ecolor='lightgreen', lw=1, capsize=2)
     
     plt.legend(loc="best")
@@ -394,17 +394,17 @@ def plot_plddt_confidence_score_for_all_WT_proteins_1():
 
 ssym_df = pd.read_excel("data/ssym_classified_full.xlsx")[["inverse_pdb_id", "inverse_chain_id", "is_destabilizing"]]
 
-for neighbor in range(4):
-    wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-    mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-    mt_plddt_statistics_df = pd.merge(left=mt_plddt_statistics_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
-    plot_mutation_site_vs_plddt_confidence(wt_plddt_statistics_df, 
-                                           mt_plddt_statistics_df, 
-                                           ylabel="{}-neighborhood".format(neighbor))
-    # break
-
 # for neighbor in range(4):
+#     wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
 #     mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-#     plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df,
-#                                                     ylabel="{}-neighborhood".format(neighbor))
+#     mt_plddt_statistics_df = pd.merge(left=mt_plddt_statistics_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
+#     plot_mutation_site_vs_plddt_confidence(wt_plddt_statistics_df, 
+#                                            mt_plddt_statistics_df, 
+#                                            ylabel="{}-neighborhood".format(neighbor))
 #     # break
+
+for neighbor in range(4):
+    mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+    plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df,
+                                                    ylabel="{}-neighborhood".format(neighbor))
+    # break
