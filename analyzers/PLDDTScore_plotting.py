@@ -36,6 +36,69 @@ configs = [{
     },
 ]
 
+def plot_mutation_site_vs_plddt_confidence(wt_plddt_statistics_df, 
+                                    mt_plddt_statistics_df, 
+                                    ylabel="0-neighborhood"):
+    fig = plt.figure()
+    gs = fig.add_gridspec(2, hspace=0)
+    axs = gs.subplots(sharex=True, sharey=True)
+    
+    pdb_ids = wt_plddt_statistics_df["pdb_id"]
+    mutation_sites = wt_plddt_statistics_df["mutation_site"].astype(str)
+    # pdb_id_mutation_sites = wt_plddt_statistics_df["pdb_id"] + wt_plddt_statistics_df["mutation_site"].astype(str)
+    mins = wt_plddt_statistics_df["min"]
+    maxs = wt_plddt_statistics_df["max"]
+    means = wt_plddt_statistics_df["avg"]
+    stds = wt_plddt_statistics_df["std"]
+    axs[0].errorbar(mutation_sites, means, stds, color="green", fmt=".", ecolor="lightgreen", elinewidth=4, label="Wildtype")
+    axs[0].legend()
+    axs[0].errorbar(mutation_sites, means, yerr=[means-mins, maxs-means], fmt='.', color="green", ecolor='lightgreen', lw=1, capsize=2)
+    
+    stabilizing_mt_plddt_statistics_df = mt_plddt_statistics_df[mt_plddt_statistics_df["is_destabilizing"]==0]
+    pdb_ids = stabilizing_mt_plddt_statistics_df["pdb_id"]
+    mutation_sites = stabilizing_mt_plddt_statistics_df["mutation_site"].astype(str)
+    mins = stabilizing_mt_plddt_statistics_df["min"]
+    maxs = stabilizing_mt_plddt_statistics_df["max"]
+    means = stabilizing_mt_plddt_statistics_df["avg"]
+    stds = stabilizing_mt_plddt_statistics_df["std"]
+    axs[1].errorbar(mutation_sites, means, stds, color="orange", fmt=".", ecolor="lightgreen", elinewidth=4, label="Stabilizing variant")
+    axs[1].legend()
+    axs[1].errorbar(mutation_sites, means, yerr=[means-mins, maxs-means], fmt='.', color="orange", ecolor='lightgreen', lw=1, capsize=2)
+    
+    destabilizing_mt_plddt_statistics_df = mt_plddt_statistics_df[mt_plddt_statistics_df["is_destabilizing"]==1]
+    pdb_ids = destabilizing_mt_plddt_statistics_df["pdb_id"]
+    mutation_sites = destabilizing_mt_plddt_statistics_df["mutation_site"].astype(str)
+    mins = destabilizing_mt_plddt_statistics_df["min"]
+    maxs = destabilizing_mt_plddt_statistics_df["max"]
+    means = destabilizing_mt_plddt_statistics_df["avg"]
+    stds = destabilizing_mt_plddt_statistics_df["std"]
+    axs[1].errorbar(mutation_sites, means, stds, color="red", fmt=".", ecolor="lightgreen", elinewidth=4, label="Destabilizing variant")
+    axs[1].legend()
+    axs[1].errorbar(mutation_sites, means, yerr=[means-mins, maxs-means], fmt='.', color="red", ecolor='lightgreen', lw=1, capsize=2)
+    # pdb_ids = mt_plddt_statistics_df["pdb_id"]
+    # mutation_sites = mt_plddt_statistics_df["mutation_site"].astype(str)
+    # # pdb_id_mutation_sites = mt_plddt_statistics_df["pdb_id"] + mt_plddt_statistics_df["mutation_site"].astype(str)
+    # mins = mt_plddt_statistics_df["min"]
+    # maxs = mt_plddt_statistics_df["max"]
+    # means = mt_plddt_statistics_df["avg"]
+    # stds = mt_plddt_statistics_df["std"]
+    # axs[1].errorbar(mutation_sites, means, stds, color="red", fmt=".", ecolor="lightgreen", elinewidth=4, label="Variant")
+    # axs[1].legend()
+    # axs[1].errorbar(mutation_sites, means, yerr=[means-mins, maxs-means], fmt='.', color="red", ecolor='lightgreen', lw=1, capsize=2)
+    
+    for ax in axs:
+        ax.label_outer()
+    
+    plt.legend(loc="best")
+    plt.xticks([], [])
+    # plt.xticks(rotation='vertical')
+    plt.xlabel("Mutation site")
+    plt.ylabel("PLDDT ({})".format(ylabel))
+    # plt.show()
+    plt.savefig("output_images/mutation_site_vs_plddt_confidence_plots/{}.pdf".format(ylabel), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+    plt.close()
+    
+    
 
 def get_mutation_site_vs_statistics(wt_plddt_statistics_df, 
                                     mt_plddt_statistics_df,
@@ -69,13 +132,13 @@ def get_mutation_site_vs_statistics(wt_plddt_statistics_df,
         fig = plt.figure()
         gs = fig.add_gridspec(2, hspace=0)
         axs = gs.subplots(sharex=True, sharey=True)
-        axs[0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+        axs[0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
         axs[0].legend()
         axs[1].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
         axs[1].legend()
         for ax in axs:
             ax.label_outer()
-        plt.legend(loc="best")
+        plot_mutation_site_vs_plddt_confidence.legend(loc="best")
         plt.xlabel("Mutation site")
         plt.ylabel("Confidence PLDDT ({})".format(ylabel.lower()))
         # plt.show()
@@ -96,35 +159,35 @@ def plot_mutation_site_vs_statistics_1():
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[0]["statistics_name"], ylabel=configs[0]["ylabel"], filename=configs[0]["mutation_site_vs_plddt"], do_plot=False)
     ax1 = fig.add_subplot(gs[0, 0:2])
     ax2 = fig.add_subplot(gs[1, 0:2])
-    ax1.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    ax1.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     ax2.scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     ax2.set_ylabel(configs[0]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[1]["statistics_name"], ylabel=configs[1]["ylabel"], filename=configs[1]["mutation_site_vs_plddt"], do_plot=False)
     ax3 = fig.add_subplot(gs[0, 2:4])
     ax4 = fig.add_subplot(gs[1, 2:4])
-    ax3.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    ax3.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     ax4.scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     ax4.set_ylabel(configs[1]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[2]["statistics_name"], ylabel=configs[2]["ylabel"], filename=configs[2]["mutation_site_vs_plddt"], do_plot=False)
     ax5 = fig.add_subplot(gs[0, 4:6])
     ax6 = fig.add_subplot(gs[1, 4:6])
-    ax5.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    ax5.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     ax6.scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     ax6.set_ylabel(configs[2]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[3]["statistics_name"], ylabel=configs[3]["ylabel"], filename=configs[3]["mutation_site_vs_plddt"], do_plot=False)
     ax7 = fig.add_subplot(gs[3, 1:3])
     ax8 = fig.add_subplot(gs[4, 1:3])
-    ax7.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    ax7.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     ax8.scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     ax8.set_ylabel(configs[3]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[4]["statistics_name"], ylabel=configs[4]["ylabel"], filename=configs[4]["mutation_site_vs_plddt"], do_plot=False)
     ax9 = fig.add_subplot(gs[3, 3:5])
     ax10 = fig.add_subplot(gs[4, 3:5])
-    ax9.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    ax9.scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     ax10.scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     ax10.set_ylabel(configs[4]["ylabel"])
     
@@ -143,17 +206,17 @@ def plot_mutation_site_vs_statistics_0():
     gs = fig.add_gridspec(5,3, hspace=0.0)
     axs = gs.subplots(sharex=True, sharey=False)
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[0]["statistics_name"], ylabel=configs[0]["ylabel"], filename=configs[0]["mutation_site_vs_plddt"], do_plot=False)
-    axs[0,0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    axs[0,0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     axs[1,0].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     axs[1,0].set_ylabel(configs[0]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[1]["statistics_name"], ylabel=configs[1]["ylabel"], filename=configs[1]["mutation_site_vs_plddt"], do_plot=False)
-    axs[0,1].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    axs[0,1].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     axs[1,1].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     axs[1,1].set_ylabel(configs[1]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[2]["statistics_name"], ylabel=configs[2]["ylabel"], filename=configs[2]["mutation_site_vs_plddt"], do_plot=False)
-    axs[0,2].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    axs[0,2].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     axs[1,2].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     axs[1,2].set_ylabel(configs[2]["ylabel"])
     
@@ -162,12 +225,12 @@ def plot_mutation_site_vs_statistics_0():
     axs[2,2].remove()
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[3]["statistics_name"], ylabel=configs[3]["ylabel"], filename=configs[3]["mutation_site_vs_plddt"], do_plot=False)
-    axs[3,0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    axs[3,0].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     axs[4,0].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     axs[4,0].set_ylabel(configs[3]["ylabel"])
     
     x_wt_mutation_site, y_wt_plddt_stat, x_mt_mutation_site, y_mt_plddt_stat = get_mutation_site_vs_statistics(statistics_name=configs[4]["statistics_name"], ylabel=configs[4]["ylabel"], filename=configs[4]["mutation_site_vs_plddt"], do_plot=False)
-    axs[3,1].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wild-type")
+    axs[3,1].scatter(x_wt_mutation_site, y_wt_plddt_stat, color='green', label="Wildtype")
     axs[4,1].scatter(x_mt_mutation_site, y_mt_plddt_stat, color='red', label="Variant")
     axs[4,1].set_ylabel(configs[4]["ylabel"])
     
@@ -178,6 +241,33 @@ def plot_mutation_site_vs_statistics_0():
     plt.show()
 # plot_mutation_site_vs_statistics_0() 
 
+def plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df, ylabel):
+    # print(mt_plddt_statistics_df.head())
+    ssym_classified_full_df = pd.read_excel("data/ssym_classified_full.xlsx")
+    mt_plddt_statistics_df = mt_plddt_statistics_df.rename(columns={"pdb_id": "inverse_pdb_id"})
+    mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_df.merge(right=ssym_classified_full_df[["pdb_id", "inverse_pdb_id"]],
+                                                                   how="left", left_on="inverse_pdb_id", right_on="inverse_pdb_id", 
+                                                                   left_index=False, right_index=False,)  
+    # print(mt_plddt_statistics_with_wtpdbid_df.head())
+    print(mt_plddt_statistics_with_wtpdbid_df.groupby(by="pdb_id", sort=False).mean().head())
+    grouped_mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_with_wtpdbid_df.groupby(by="pdb_id", sort=False).mean()
+    
+    pdb_ids = grouped_mt_plddt_statistics_with_wtpdbid_df.index.values
+    mins = grouped_mt_plddt_statistics_with_wtpdbid_df["min"]
+    maxs = grouped_mt_plddt_statistics_with_wtpdbid_df["max"]
+    means = grouped_mt_plddt_statistics_with_wtpdbid_df["avg"]
+    stds = grouped_mt_plddt_statistics_with_wtpdbid_df["std"]
+    plt.errorbar(pdb_ids, means, stds, color="green", fmt=".", ecolor="lightgreen", elinewidth=4) #, label="Wildtype"
+    plt.errorbar(pdb_ids, means, yerr=[means-mins, maxs-means], fmt='.', color="green", ecolor='lightgreen', lw=1, capsize=2)
+    
+    plt.legend(loc="best")
+    plt.xlabel("Dataset (Wildtype)")
+    plt.xticks([], [])
+    plt.ylabel("Mutaion site PLDDT in variants ({})".format(ylabel))
+    # plt.show()
+    plt.savefig("output_images/wt_vs_mutation_site_in_mt_plddt_confidence_plots/{}.pdf".format(ylabel), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+    plt.close()
+    
 def get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
                                                    statistics_name="median", 
                                                    ylabel="Median", 
@@ -214,22 +304,21 @@ def get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df,
     temp_df = pd.DataFrame()
     temp_df = pd.concat(wt_specific_plddt, axis=1)
     temp_df.columns = [''] * len(temp_df.columns) # removed the column names as they were pdb id
-    # print(temp_df.head())
+    print(temp_df.head())
     if do_plot:
         temp_df.boxplot(grid=True) 
         plt.legend(loc="best")
-        plt.xlabel("Dataset (Wild-type)")
+        plt.xlabel("Dataset (Wildtype)")
         plt.ylabel("Confidence PLDDT ({})".format(ylabel.lower()))
         # plt.show()
         plt.savefig("output_images/wt_specific_plddt_confidence_plots/{}_{}_neighbor.pdf".format(filename, neighbor), dpi=300, format="pdf")
         plt.close()
     return temp_df
   
-    
 
 def plot_plddt_confidence_score_for_all_WT_proteins():
     fig, axs = plt.subplots(nrows=2, ncols=3, sharex=True, figsize=(10, 6))
-    fig.text(0.5, 0.01, "Dataset (Wild-type)", ha='center')
+    fig.text(0.5, 0.01, "Dataset (Wildtype)", ha='center')
     fig.text(0.02, 0.5, "Confidence (PLDDT)", va='center', rotation='vertical')
     k=-1
     for i, x in enumerate(configs):
@@ -249,7 +338,7 @@ def plot_plddt_confidence_score_for_all_WT_proteins_1():
     """Better image with colspan.
     """
     fig = plt.figure(0)
-    fig.text(0.5, 0.01, "Dataset (Wild-type)", ha='center')
+    fig.text(0.5, 0.01, "Dataset (Wildtype)", ha='center')
     fig.text(0.02, 0.5, "Confidence (PLDDT)", va='center', rotation='vertical')
     axs = []
     axs.append(plt.subplot2grid((2,6), (0,0), colspan=2))
@@ -277,24 +366,45 @@ def plot_plddt_confidence_score_for_all_WT_proteins_1():
 # plot_mutation_site_vs_statistics_1()
 
 
-for config in configs:
-    for neighbor in range(3):
-        wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-        mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-        statistics_name = config["statistics_name"]
-        ylabel = config["ylabel"]
-        filename = config["mutation_site_vs_plddt"]
-        do_plot = True
-        get_mutation_site_vs_statistics(wt_plddt_statistics_df, mt_plddt_statistics_df, 
-                                        statistics_name, ylabel, filename, do_plot, neighbor)
+# for config in configs:
+#     for neighbor in range(3):
+#         wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+#         mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+#         statistics_name = config["statistics_name"]
+#         ylabel = config["ylabel"]
+#         filename = config["mutation_site_vs_plddt"]
+#         do_plot = True
+#         get_mutation_site_vs_statistics(wt_plddt_statistics_df, mt_plddt_statistics_df, 
+#                                         statistics_name, ylabel, filename, do_plot, neighbor)
+        
     # break
     
-for config in configs:
-    for neighbor in range(3):
-        mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-        statistics_name = config["statistics_name"]
-        ylabel = config["ylabel"]
-        filename = config["mutation_site_vs_plddt"]
-        do_plot = True
-        get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
-                                        statistics_name, ylabel, filename, do_plot, neighbor)
+# for config in configs:
+#     for neighbor in range(4):
+#         mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+#         statistics_name = config["statistics_name"]
+#         ylabel = config["ylabel"]
+#         filename = config["wt_versus_plddt"]
+#         do_plot = True
+#         get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
+#                                         statistics_name, ylabel, filename, do_plot, neighbor)
+#         break
+#     break
+    
+
+ssym_df = pd.read_excel("data/ssym_classified_full.xlsx")[["inverse_pdb_id", "inverse_chain_id", "is_destabilizing"]]
+
+for neighbor in range(4):
+    wt_plddt_statistics_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+    mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+    mt_plddt_statistics_df = pd.merge(left=mt_plddt_statistics_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
+    plot_mutation_site_vs_plddt_confidence(wt_plddt_statistics_df, 
+                                           mt_plddt_statistics_df, 
+                                           ylabel="{}-neighborhood".format(neighbor))
+    # break
+
+# for neighbor in range(4):
+#     mt_plddt_statistics_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
+#     plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df,
+#                                                     ylabel="{}-neighborhood".format(neighbor))
+#     # break

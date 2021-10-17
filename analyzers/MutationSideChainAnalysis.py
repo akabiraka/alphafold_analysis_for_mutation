@@ -5,6 +5,7 @@ import pandas as pd
 from os.path import exists
 import glob
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
 
 class MutationSideChainAnalysis(object):
     def __init__(self) -> None:
@@ -14,35 +15,47 @@ class MutationSideChainAnalysis(object):
         self.svd_super_imposer = Bio.SVDSuperimposer.SVDSuperimposer()
 
     def plot(self):
-        color = ["green", "blue", "red"]
-        for neighbor in range(3):
+        for neighbor in range(1):
+            ssym_df = pd.read_excel("data/ssym_classified_full.xlsx")[["inverse_pdb_id", "inverse_chain_id", "is_destabilizing"]]
             wt_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
             mt_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-            
-            x_wt_mutation_site = wt_df["mutation_site"].astype(int)
-            y_wt_rmsd = wt_df["rmsd"].astype(float)
-            x_mt_mutation_site = mt_df["mutation_site"].astype(int)
-            y_mt_rmsd = mt_df["rmsd"].astype(float)
-            
             
             fig = plt.figure()
             gs = fig.add_gridspec(2, hspace=0)
             axs = gs.subplots(sharex=True, sharey=True)
-            axs[0].scatter(x_wt_mutation_site, y_wt_rmsd, color='green', label="Wild-type")
+            
+            
+            
+            x_wt_mutation_site = wt_df["mutation_site"].astype(int)
+            y_wt_rmsd = wt_df["rmsd"].astype(float)
+            axs[0].scatter(x_wt_mutation_site, y_wt_rmsd, color='green', label="Wildtype")
             axs[0].legend()
-            axs[1].scatter(x_mt_mutation_site, y_mt_rmsd, color='red', label="Variant")
+            
+            mt_df = pd.merge(left=mt_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
+            
+            stabilizing_mt_df = mt_df[mt_df["is_destabilizing"]==0]
+            x_mt_mutation_site = stabilizing_mt_df["mutation_site"].astype(int)
+            y_mt_rmsd = stabilizing_mt_df["rmsd"].astype(float)
+            axs[1].scatter(x_mt_mutation_site, y_mt_rmsd, color='orange', label="Stabilizing variant")
             axs[1].legend()
+            
+            destabilizing_mt_df = mt_df[mt_df["is_destabilizing"]==1]
+            x_mt_mutation_site = destabilizing_mt_df["mutation_site"].astype(int)
+            y_mt_rmsd = destabilizing_mt_df["rmsd"].astype(float)
+            axs[1].scatter(x_mt_mutation_site, y_mt_rmsd, color='red', label="Destabilizing variant")
+            axs[1].legend()
+            
             for ax in axs:
                 ax.label_outer()
             plt.legend(loc="best")
             plt.xlabel("Mutation site")
-            plt.ylabel("RMSD($\AA$) ({}-neighborhood)".format(neighbor))
+            plt.ylabel("RMSD($\AA$)")
             # plt.show()
-            plt.savefig("output_images/mutation_site_rmsd_plots/mutation_site_rmsd_{}_neighbor.pdf".format(neighbor), dpi=300, format="pdf")
+            plt.savefig("output_images/mutation_site_vs_rmsd_plots/{}-neighborhood.pdf".format(neighbor), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
             plt.close()
 
 
-    def __get_atom_coords(self, target_residue, predicted_residue):
+    def get_atom_coords(self, target_residue, predicted_residue):
         """Map atoms and return 3d coordinates of mapped atoms.
 
         Args:
@@ -54,47 +67,41 @@ class MutationSideChainAnalysis(object):
         """
         target_side_chain_atom_coords = []
         predicted_side_chain_atom_coords = []
+        
+        target_main_chain_atom_coords = []
+        predicted_main_chain_atom_coords = []
         for atom in target_residue.get_atoms():
             # print(atom.name, predicted_residue[atom.name].name)
             # print(atom.get_coord(), predicted_residue[atom.name].get_coord())
-            if predicted_residue.has_id(atom.name):
+            # print(atom.name)
+            if atom.name in ["N", "CA", "C"]:
+                # print("Main chain atom: ", atom.name)
+                target_main_chain_atom_coords.append(atom.get_coord())
+                predicted_main_chain_atom_coords.append(predicted_residue[atom.name].get_coord())
+                
+            if atom.name not in ["N", "CA", "C"] and predicted_residue.has_id(atom.name):
+                # print("Side chain atom: ", atom.name)
                 target_side_chain_atom_coords.append(atom.get_coord())
                 predicted_side_chain_atom_coords.append(predicted_residue[atom.name].get_coord())
-        return np.array(target_side_chain_atom_coords), np.array(predicted_side_chain_atom_coords)
-
-    def compute_mutation_side_chain_rmsd(self, target_pdb_file, predicted_pdb_file, mutation_site, neighbor=0, chain_id = "A"):
-        """Computes RMS using Bio.SVDSuperimposer of two side chains.
-
-        Args:
-            target_pdb_file (str): a pdb file path
-            predicted_pdb_file (str): a pdb file path
-            mutation_site (int): a mutated residue number
-            chain_id (str, optional): chain id. Defaults to "A".
-
-        Returns:
-            float: SVD super imposed rms value
-        """
-        all_rmsds = []
-        for i in range(-neighbor, neighbor+1):
-            new_mutation_site = mutation_site+i  
-            chain = self.pdb_parser.get_structure("protein", target_pdb_file)[0][chain_id]
-            if chain.has_id(new_mutation_site)!=1: continue
                 
-            # extracting the mutation site specific residue
-            target_residue = self.pdb_parser.get_structure("protein", target_pdb_file)[0][chain_id][new_mutation_site]
-            predicted_residue = self.pdb_parser.get_structure("protein", predicted_pdb_file)[0]["A"][new_mutation_site]
-        
-            target_coords, predicted_coords = self.__get_atom_coords(target_residue, predicted_residue)
-        
-            # apply the imposer
-            self.svd_super_imposer.set(reference_coords=target_coords, coords=predicted_coords)
-            self.svd_super_imposer.run()
-            # print(svd_super_imposer.get_init_rms(), svd_super_imposer.get_rms())
-            all_rmsds.append(self.svd_super_imposer.get_rms())
-        
-        return all_rmsds
+        print(np.array(target_main_chain_atom_coords).shape, np.array(predicted_main_chain_atom_coords).shape, 
+              np.array(target_side_chain_atom_coords).shape, np.array(predicted_side_chain_atom_coords).shape)
+        return np.array(target_main_chain_atom_coords), np.array(predicted_main_chain_atom_coords), np.array(target_side_chain_atom_coords), np.array(predicted_side_chain_atom_coords)
 
-    def compute_all_mutation_side_chain_rmsd(self, neighbor=0, file_path="outputs/mt_mutation_plddt_statistics_0_neighbor.xlsx"):
+    
+    def compute_side_chain_rmsd_for_mutation_site_(self, target_pdb_file, predicted_pdb_file, mutation_site):
+        target_residue = self.pdb_parser.get_structure("protein", target_pdb_file)[0]["A"][mutation_site]
+        predicted_residue = self.pdb_parser.get_structure("protein", predicted_pdb_file)[0]["A"][mutation_site]
+        target_main_chain_atom_coords, predicted_main_chain_atom_coords, target_side_chain_atom_coords, predicted_side_chain_atom_coords = self.get_atom_coords(target_residue, predicted_residue)
+        self.svd_super_imposer.set(reference_coords=target_main_chain_atom_coords, coords=predicted_main_chain_atom_coords)
+        self.svd_super_imposer.run()
+        rot, tran = self.svd_super_imposer.get_rotran()
+        predicted_side_chain_atom_coords_transformed = np.dot(predicted_side_chain_atom_coords, rot) + tran
+        mse = mean_squared_error(y_true=target_side_chain_atom_coords, y_pred=predicted_side_chain_atom_coords_transformed)
+        rmse = np.sqrt(mse)
+        return rmse
+        
+    def compute_all_mutation_side_chain_rmsd(self, file_path="outputs/mt_mutation_plddt_statistics_0_neighbor.xlsx"):
         mutation_site_df = pd.read_excel(file_path)
         mutation_site_df["rmsd"] = 0.0
         # print(mutation_site_df.head())
@@ -104,8 +111,8 @@ class MutationSideChainAnalysis(object):
             mutation_site = int(row["mutation_site"])
             target_pdb_file = "data/pdbs/{}{}.pdb".format(pdb_id, chain_id)
             predicted_pdb_file = glob.glob("data/pdbs_alphafold_predicted/prediction_{}_*/rank_1_*_unrelaxed.pdb".format(pdb_id.upper()))[0]
-            print(pdb_id, chain_id, mutation_site, target_pdb_file, predicted_pdb_file)
-            rmsd = np.mean(self.compute_mutation_side_chain_rmsd(target_pdb_file, predicted_pdb_file, mutation_site, neighbor, chain_id))
+            # print(pdb_id, chain_id, mutation_site, target_pdb_file, predicted_pdb_file)
+            rmsd = self.compute_side_chain_rmsd_for_mutation_site_(target_pdb_file, predicted_pdb_file, mutation_site)
             mutation_site_df.loc[i, "rmsd"] = rmsd
             print(rmsd)
             # break
@@ -125,23 +132,24 @@ class TestMutationSideChainAnalysis(unittest.TestCase):
         predicted_pdb_file = glob.glob("data/pdbs_alphafold_predicted/prediction_3AA5_*/rank_1_*_unrelaxed.pdb")[0]
         mutation_site = 44
         chain_id = "A"
-        neighbor = 3
-        rmds = self.mutation_side_chain_analysis.compute_mutation_side_chain_rmsd(target_pdb_file, 
+        neighbor = 1
+        rmsd = self.mutation_side_chain_analysis.compute_mutation_side_chain_rmsd(target_pdb_file, 
                                                                                  predicted_pdb_file, 
                                                                                  mutation_site, 
                                                                                  neighbor,
                                                                                  chain_id)
-        print(rmds)
+        print(rmsd)
 
     @unittest.skipIf(True, "Takes time.")        
     def test_compute_all_mutation_side_chain_rmsd(self):
-        for neighbor in range(3):
-            self.mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(neighbor=neighbor, file_path="outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-            self.mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(neighbor=neighbor, file_path="outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor))
-            # break
-            
+        self.mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(file_path="outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(0))
+        self.mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(file_path="outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(0))
+        # break
+    
+    # @unittest.skipIf(True, "Takes time.")            
     def test_plot(self):
         self.mutation_side_chain_analysis.plot()
         
 if __name__ == "__main__":
     unittest.main()        
+    

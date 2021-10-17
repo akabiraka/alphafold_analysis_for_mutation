@@ -218,7 +218,7 @@ class PLDDTScore(object):
             mutation_sites = self.get_mutation_site(pdb_id)
             
             for mutation_site in mutation_sites:
-                min, max, avg, median, std = self.compute_mutation_site_statistics(int(mutation_site), plddt_scores)
+                min, max, avg, median, std = self.compute_mutation_site_statistics(int(mutation_site), plddt_scores, neighbor)
                 if self.is_wild_type(pdb_id):
                     wt_mutation_site_plddt_statistics.append([pdb_id, chain_id, mutation_site, min, max, avg, median, std])
                 else:
@@ -280,17 +280,22 @@ class TestPLDDTScore(unittest.TestCase):
 
     @unittest.skipIf(True, "Takes time.")        
     def test_compute_mutation_site_statistics(self):
-        mutation_site = 191
-        with open("output_plddt_scores/1amqA.pkl", "rb") as f:
+        mutation_site = 44
+        with open("output_plddt_scores/109lA.pkl", "rb") as f:
             plddt_scores = pickle.load(f)
-            print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores))
+            # print(plddt_scores)
+            print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores, neighbor=0))
+            print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores, neighbor=1))
+            print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores, neighbor=2))
+            # print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores, neighbor=3))
             self.assertTrue(True)
     
-    @unittest.skipIf(True, "Takes time.")
+    # @unittest.skipIf(True, "Takes time.")
     def test_compute_mutation_site_specific_plddt_statistics(self):
         self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=0)
         self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=1)
         self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=2)
+        self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=3)
         self.assertTrue(True)
     
             
