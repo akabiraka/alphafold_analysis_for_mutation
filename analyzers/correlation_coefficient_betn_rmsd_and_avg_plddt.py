@@ -1,8 +1,18 @@
+import sys
+sys.path.append("../alphafold_analysis_for_mutation")
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr, spearmanr
 
-def plot_correlation_coefficient_wt(df, output_file_name, color):
+def plot_correlation_coefficient_wt(df, output_file_name):
+    """Plots PCC and SCC values with scatter plot between 
+    average PLDDT and RMSD values.
+
+    Args:
+        df (dataframe): input dataframe that has at least two column, named "avg" and "rmsd"
+        output_file_name (str): the filename to save the figure.
+    """
     plddt_avg = df["avg"].astype(float)
     rmsd = df["rmsd"].astype(float)
 
@@ -19,6 +29,14 @@ def plot_correlation_coefficient_wt(df, output_file_name, color):
     plt.close()
     
 def plot_correlation_coefficient_mt(df, output_file_name):
+    """Plots PCC and SCC values with scatter plot between 
+    average PLDDT and RMSD values. Also for stabilizing and destabilizing 
+    mutations it puts two colors orange and red.
+
+    Args:
+        df (dataframe): input dataframe that has at least two column, named "avg" and "rmsd"
+        output_file_name (str): the filename to save the figure.
+    """
     plddt_avg = df["avg"].astype(float)
     rmsd = df["rmsd"].astype(float)
 
@@ -40,13 +58,13 @@ def plot_correlation_coefficient_mt(df, output_file_name):
     plt.savefig("output_images/correlation_between_plddt_and_rmsd/{}.pdf".format(output_file_name), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
     plt.close()
 
+# plotting correlation coefficient for wildtype proteins.
 wt_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_0_neighbor.xlsx")
-plot_correlation_coefficient_wt(wt_df, "wild-type", "green")
+plot_correlation_coefficient_wt(wt_df, "wild-type")
 
+# plotting correlation coefficient for mutant proteins.
 ssym_df = pd.read_excel("data/ssym_classified_full.xlsx")[["inverse_pdb_id", "inverse_chain_id", "is_destabilizing"]]
 mt_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_0_neighbor.xlsx")
 mt_df = pd.merge(left=mt_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
-
-
 plot_correlation_coefficient_mt(mt_df, "variant")
 
