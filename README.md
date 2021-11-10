@@ -1,6 +1,6 @@
 # Project Title
 
-Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein Sequences
+Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein Sequences. Lets check this.
 
 ## What it does!!!
 
