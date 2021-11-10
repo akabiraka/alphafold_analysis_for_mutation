@@ -88,3 +88,17 @@ class ChainAndAminoAcidSelect(Select):
             return 1
         else:
             return 0
+        
+        
+class AllChainAndStandardAminoAcidSelect(Select):
+    def __init__(self):
+        super(ChainAndAminoAcidSelect).__init__()
+        
+    def accept_chain(self, chain):
+        return 1
+            
+    def accept_residue(self, residue):
+        if residue.get_resname() in standard_aa_names:
+            return 1
+        else:
+            return 0

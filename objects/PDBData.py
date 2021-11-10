@@ -2,9 +2,9 @@ __author__ = "Anowarul Kabir"
 __updated__ = "2020-07-25 14:50:23"
 
 import sys
-from typing import KeysView
 sys.path.append("../protein_data")
 import requests
+import os
 
 from Bio.PDB import *
 from Bio.PDB.PDBIO import PDBIO
@@ -125,6 +125,39 @@ class PDBData(object):
         print("Generating fasta {}:{}:{} ... ..".format(pdb_id, chain_id, len(seq)))
         return seq, len(seq)
     
+    def generate_full_fasta_from_pdb(self, pdb_id, input_pdb_filepath, output_fasta_dir=None, force=False):
+        output_fasta_file = "{}{}.fasta".format(output_fasta_dir, pdb_id)
+        if os.path.exists(output_fasta_file) and force==False: 
+            print("Fasta is already set up for {}. To set-up again, set force=True.".format(pdb_id))
+            return
+        structure = PDBParser(QUIET=True).get_structure(pdb_id, input_pdb_filepath)
+        seqs = []
+        for model in structure:
+            model_id = model.id
+            for chain in model:
+                chain_id = chain.id
+                seq = ""
+                for residue in chain:
+                    seq += Polypeptide.three_to_one(residue.get_resname())
+                seqs.append(seq)
+                with open(output_fasta_file, "a") as fasta_file_handle:
+                    fasta_file_handle.write(">{}_{}_{}\n".format(pdb_id, model_id, chain_id))
+                    fasta_file_handle.write(seq+"\n")
+                    
+        seqs_dict = dict.fromkeys(seqs, 0) 
+        for seq in seqs:
+            seqs_dict[seq] +=1                               
+        
+        with open(output_fasta_file, "a") as fasta_file_handle:
+            fasta_file_handle.write("\nAlphaFold2: sequence n-homooligomers\n")
+            for i, seq_key in enumerate(seqs_dict.keys()):
+                if i==0: fasta_file_handle.write(seq_key)
+                else: fasta_file_handle.write(":"+seq_key)
+            fasta_file_handle.write("\n")
+            for i, seq_key in enumerate(seqs_dict.keys()):
+                if i==0: fasta_file_handle.write(str(seqs_dict[seq]))
+                else: fasta_file_handle.write(":"+str(seqs_dict[seq]))
+        
     def __save_fasta(self, pdb_id, fasta_text, is_save_file=True, fasta_dir="data/fastas/"):
         """Private method for download_fasta method
 

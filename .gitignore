@@ -131,6 +131,7 @@ dmypy.json
 data/error/*
 data/fastas/*
 data/pdbs/*
+data/pdbs_clean/*
 data/pdbs_alphafold_predicted/*
 outputs/*
 output_all_scores/*
