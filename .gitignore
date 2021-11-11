@@ -133,6 +133,7 @@ data/fastas/*
 data/pdbs/*
 data/pdbs_clean/*
 data/pdbs_alphafold_predicted/*
+data/for_*
 outputs/*
 output_all_scores/*
 output_plddt_scores/*

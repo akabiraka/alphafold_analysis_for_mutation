@@ -15,7 +15,7 @@ fastas_dir = "data/fastas/"
 CIF = "mmCif"
 input_file_path = "data/ssym_684_copy.xlsx"
 n_proteins_to_skip = 0
-n_proteins_to_evalutate = 10#000
+n_proteins_to_evalutate = 10000
 
 # object initialization
 PDBData = PDBData(pdb_dir=pdb_dir)
