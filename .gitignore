@@ -137,3 +137,4 @@ data/for_*
 outputs/*
 output_all_scores/*
 output_plddt_scores/*
+data/*
