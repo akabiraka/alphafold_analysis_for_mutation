@@ -171,12 +171,7 @@ configs = [
 ]
 
 for config in configs:
-    column_name=config["column_name"]
-    filename=config["filename"]
-    xlabel=config["xlabel"]
-    ylabel=config["ylabel"]
-    dir = "output_all_scores/"
-
+    column_name, filename, xlabel, ylabel, dir=config["column_name"], config["filename"], config["xlabel"], config["ylabel"], "output_all_scores/"
     print("plotting ", filename)
 
     score_data = []

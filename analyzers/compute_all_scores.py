@@ -16,8 +16,8 @@ input_file_path = "data/ssym_684_classified.csv"
 cln_pdb_dir = "data/pdbs_clean/"
 af_pred_dir = "data/alphafold2_predicted_pdbs/"
 out_dir = "outputs/scoring/"
-n_proteins_to_skip = 233
-n_proteins_to_evalutate = 1#0000
+n_proteins_to_skip = 307
+n_proteins_to_evalutate = 10000
 dfs = pd.read_csv(input_file_path)
 
 # object initialization
@@ -39,10 +39,10 @@ def get_row_items(row):
     mutant_chain_id=row["inv_chain_id"]
     return pdb_id, chain_id, mutant_pdb_id, mutant_chain_id, wild_residue, mutation, mutant_residue, mutation_site, ddg
 
-def run_score_pipeline(ref_pdb_filepath, ref_chain_id, sample_pdb_filepath):
+def run_score_pipeline(ref_pdb_filepath, ref_chain_id, sample_pdb_filepath, sample_chain_id):
     # print(ref_pdb_filepath, sample_pdb_filepath)
     tms, maxsub, gdt_ts, gdt_ha = gdt_score.get_by_TMscore_software(ref_pdb_filepath, sample_pdb_filepath)
-    rms = rms_score.get_by_SVDSuperImposer(ref_pdb_filepath, ref_chain_id, sample_pdb_filepath)
+    rms = rms_score.get_by_SVDSuperImposer(ref_pdb_filepath, ref_chain_id, sample_pdb_filepath, sample_chain_id)
     # tms = tm_score.get(ref_pdb_filepath, sample_pdb_filepath)
     return tms, rms, maxsub, gdt_ts, gdt_ha
 
@@ -61,20 +61,23 @@ def get_af_scores(filepath):
     return data
 
 def clean(inp_pdb_file, chain_id, out_pdb_file):
+    chains=list(PDBParser(QUIET=True).get_structure("", inp_pdb_file)[0].get_chains())
+    if len(chains)==1: return inp_pdb_file, chains[0].id
+    
     structure = PDBParser(QUIET=True).get_structure("", inp_pdb_file)
     io=PDBIO()
     io.set_structure(structure)
     io.save(out_pdb_file, select=ChainAndAminoAcidSelect(chain_id))
-    return out_pdb_file
+    return out_pdb_file, chain_id
 
 def get_strucutre_comparison_scores(pdb_id, chain_id, ref_pdb_filepath, af_pred_dir):
     tmr_working_dir="data/tmp/"
     scores=[]
     for pred_pdb_file in glob.iglob(af_pred_dir+"*.pdb"):
         pred_file_name = pred_pdb_file.split("/")[-1].split(".")[0]
-        cln_pred_pdb_file = clean(pred_pdb_file, chain_id, tmr_working_dir+pred_file_name+".pdb")
-        # print(cln_pred_pdb_file)
-        tms, maxsub, rms, gdt_ts, gdt_ha = run_score_pipeline(ref_pdb_filepath=ref_pdb_filepath, ref_chain_id=chain_id, sample_pdb_filepath=cln_pred_pdb_file)
+        cln_pred_pdb_file, pred_chain_id = clean(pred_pdb_file, chain_id, tmr_working_dir+pred_file_name+".pdb")
+        # print(cln_pred_pdb_file, pred_chain_id)
+        tms, maxsub, rms, gdt_ts, gdt_ha = run_score_pipeline(ref_pdb_filepath=ref_pdb_filepath, ref_chain_id=chain_id, sample_pdb_filepath=cln_pred_pdb_file, sample_chain_id=pred_chain_id)
         scores.append([pdb_id, chain_id, pred_file_name, tms, rms, maxsub, gdt_ts, gdt_ha])
     cln.clean_all_files(tmr_working_dir, ".pdb")
     return scores
