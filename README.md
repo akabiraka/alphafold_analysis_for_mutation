@@ -2,16 +2,11 @@
 
 Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein Sequences. Lets check this.
 
-## What it does!!!
+### Data generation
 
-This project analyze the AlphaFold2 predictions under the umbrella of protein mutation. Each input sequence corresponds to wildtype or its variant protein.
+* `python data_generators/generate_fasta_for_alphafold2.py`:
+* `python data_generators/classify_data.py`:
 
-## Directories
+### Analysis
 
-```
-3rd_party_softwares/
-    It contains the Zhang-lab's TM-score computation executable. (https://zhanggroup.org/TM-score/)
-analyzers/
-    correlation_coefficient_betn_rmsd_and_avg_plddt.py
-    dataset_distribution.py
-```
+* `python analyzers/compute_all_scores.py`

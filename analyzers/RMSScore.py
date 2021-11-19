@@ -24,14 +24,15 @@ class RMSScore(object):
             atom_coords.append(residue['CA'].get_coord())
         return np.array(atom_coords)
                 
-    def get_by_SVDSuperImposer(self, ref_pdb_filepath, sample_pdb_filepath):
+    def get_by_SVDSuperImposer(self, ref_pdb_filepath, ref_chain_id, sample_pdb_filepath):
         # reading the pdb structures
         ref_structure = self.pdb_parser.get_structure("reference", ref_pdb_filepath)
         sample_structure = self.pdb_parser.get_structure("sample", sample_pdb_filepath)
         
         # get the CA atom coordinates
-        ref_atom_coords = self.__get_CA_atom_coordinates(chain=ref_structure[0]["A"])
-        sample_atom_coords = self.__get_CA_atom_coordinates(chain=sample_structure[0]["A"])
+        ref_atom_coords = self.__get_CA_atom_coordinates(chain=ref_structure[0][ref_chain_id])
+        sample_atom_coords = self.__get_CA_atom_coordinates(chain=sample_structure[0][ref_chain_id])
+        # print(ref_atom_coords.shape, sample_atom_coords.shape)
         
         # apply the imposer
         self.svd_super_imposer.set(reference_coords=ref_atom_coords, coords=sample_atom_coords)

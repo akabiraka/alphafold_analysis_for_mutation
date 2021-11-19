@@ -30,5 +30,5 @@ class CleanSlate(object):
                 os.remove(os.path.join(mydir, f))
 
 
-cln = CleanSlate()
-cln.clean_all()
+# cln = CleanSlate()
+# cln.clean_all()
