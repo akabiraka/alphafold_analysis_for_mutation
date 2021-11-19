@@ -9,9 +9,9 @@ from objects.Mutation import Mutation
 from objects.MutationCollection import MutationCollection
 
 # configurations
-pdb_dir = "data/pdbs/"
-clean_pdb_dir = "data/pdbs_clean/"
-fastas_dir = "data/fastas/"
+pdb_dir = "data/for_alphafold2_pdbs/"
+clean_pdb_dir = "data/for_alphafold2_pdbs_clean/"
+fastas_dir = "data/for_alphafold2_fastas/"
 CIF = "mmCif"
 input_file_path = "data/ssym_684_copy.xlsx"
 n_proteins_to_skip = 0
@@ -42,6 +42,7 @@ def get_mutation(row):
 dfs = pd.read_excel(input_file_path, skiprows=[1])
 # print(dfs.head())
 
+# this downloads and generate fasta of all chains for AlphaFold experiments.
 stabilizing_mutations = []
 destabilizing_mutations = []
 for i, row in dfs.iterrows():
