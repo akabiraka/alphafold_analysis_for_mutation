@@ -2,6 +2,7 @@ __author__ = "Anowarul Kabir"
 __updated__ = "2020-07-25 14:50:23"
 
 import sys
+from numpy import mod
 sys.path.append("../protein_data")
 import requests
 import os
@@ -101,7 +102,7 @@ class PDBData(object):
             if chain.id == chain_id:
                 return chain
             
-    def generate_fasta_from_pdb(self, pdb_id, chain_id, input_pdb_filepath, save_as_fasta=False, output_fasta_dir=None):
+    def generate_fasta_from_pdb(self, pdb_id, chain_id, input_pdb_filepath, save_as_fasta=False, output_fasta_file=None):
         """Return sequence and length, and create fasta file from pdb data.
 
         Args:
@@ -111,18 +112,18 @@ class PDBData(object):
         Returns:
             seq: primary sequence of the pdb file
         """
-        
+        print("Generating fasta {}:{} ... ..".format(pdb_id, chain_id))
         structure = PDBParser(QUIET=True).get_structure(pdb_id, input_pdb_filepath)
         residues = structure[0][chain_id].get_residues()
         seq = ""
         for residue in residues:
             seq += Polypeptide.three_to_one(residue.get_resname())
         
-        if save_as_fasta and output_fasta_dir is not None:
-            with open("{}{}_from_structure.fasta".format(output_fasta_dir, pdb_id), "w") as fasta_file_handle:
+        if save_as_fasta and output_fasta_file is not None:
+            with open(output_fasta_file, "w") as fasta_file_handle:
                 fasta_file_handle.write(">{}:{}\n".format(pdb_id.upper(), chain_id))
                 fasta_file_handle.write(seq)
-        print("Generating fasta {}:{}:{} ... ..".format(pdb_id, chain_id, len(seq)))
+        
         return seq, len(seq)
     
     def generate_full_fasta_from_pdb(self, pdb_id, input_pdb_filepath, output_fasta_dir=None, force=False):
@@ -214,3 +215,9 @@ class PDBData(object):
         polypeptide = self.ppb.build_peptides(structure).__getitem__(0)
         return polypeptide.get_sequence()
     
+    def get_secondary_structure_at_residue(self, pdb_id, chain_id, cln_pdb_file, residue_pos):
+        model = PDBParser(QUIET=True).get_structure(pdb_id, cln_pdb_file)[0]
+        residue_id = model[chain_id][residue_pos].id
+        dssp_dict = DSSP(model, cln_pdb_file, dssp="mkdssp")
+        ss = dssp_dict[chain_id,residue_id][2]
+        return ss
