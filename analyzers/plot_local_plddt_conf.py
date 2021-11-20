@@ -113,5 +113,5 @@ if __name__=="__main__":
     ssym_df["mt_pdb_id"] = ssym_df["inv_pdb_id"]+ssym_df["inv_chain_id"]
     unique_mt_pdb_ids_df = ssym_df[["mt_pdb_id", "mutation_type"]] 
     
-    # plot_mutation_site_vs_plddt_confidence(unique_wt_pdb_ids_df, unique_mt_pdb_ids_df)
+    plot_mutation_site_vs_plddt_confidence(unique_wt_pdb_ids_df, unique_mt_pdb_ids_df)
     plot_wt_vs_mutation_site_in_mt_plddt_confidence(ssym_df, unique_mt_pdb_ids_df)

@@ -9,12 +9,14 @@ import pickle
 import glob
 from objects.PDBData import PDBData
 from objects.Selector import ChainAndAminoAcidSelect
+from utils.CleanSlate import CleanSlate
 from Bio.PDB import *
 
 af_pred_dir = "data/alphafold2_predicted_pdbs/"
 n_proteins_to_skip = 0
 n_proteins_to_evalutate = 10000
 PDBData = PDBData()
+cln = CleanSlate()
 
 
 def clean(inp_pdb_file, chain_id, out_pdb_file):
@@ -67,7 +69,8 @@ def compute_plddts_of_a_protein(pdb_id, chain_id, af_pred_dir):
         cln_pred_pdb_file, pred_chain_id = clean(pred_pdb_file, chain_id, tmr_working_dir+pred_file_name+".pdb")
         residue_plddt_dict = parse_alphafold_pdb(pdb_filepath=cln_pred_pdb_file)
         plddt_scores.append([pdb_id, pred_chain_id, pred_file_name, residue_plddt_dict])
-                        
+    
+    cln.clean_all_files(tmr_working_dir, ".pdb")                        
     with open("outputs/plddt_scores/{}{}.pkl".format(pdb_id.lower(), chain_id), "wb") as f:
         pickle.dump(plddt_scores, f)
 
