@@ -132,7 +132,8 @@ data/error/*
 data/fastas/*
 data/pdbs/*
 data/pdbs_clean/*
-data/pdbs_alphafold_predicted/*
+data/alphafold2_predicted_pdbs/*
+data/alphafold2_predicted_pdbs_zipped/*
 data/for_*
 outputs/*
 output_all_scores/*

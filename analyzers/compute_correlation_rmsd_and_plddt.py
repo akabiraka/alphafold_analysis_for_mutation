@@ -25,7 +25,7 @@ def plot_correlation_coefficient_wt(df, output_file_name):
     plt.ylabel("RMSD ($\AA$)")
     plt.legend()
     # plt.show()
-    plt.savefig("output_images/correlation_between_plddt_and_rmsd/{}.pdf".format(output_file_name), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+    plt.savefig("outputs/images/correlation_between_plddt_and_rmsd/{}.pdf".format(output_file_name), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
     plt.close()
     
 def plot_correlation_coefficient_mt(df, output_file_name):
@@ -43,10 +43,10 @@ def plot_correlation_coefficient_mt(df, output_file_name):
     p_r, p_p_value = pearsonr(plddt_avg, rmsd)
     s_r, s_p_value = spearmanr(rmsd, plddt_avg)
     # print(r, p_value)
-    stabilizing_plddt_avg = df[df["is_destabilizing"]==0]["avg"]
-    stabilizing_rmsd = df[df["is_destabilizing"]==0]["rmsd"]
-    destabilizing_plddt_avg = df[df["is_destabilizing"]==1]["avg"]
-    destabilizing_rmsd = df[df["is_destabilizing"]==1]["rmsd"]
+    stabilizing_plddt_avg = df[df["mutation_type"]=="stabilizing"]["avg"]
+    stabilizing_rmsd = df[df["mutation_type"]=="stabilizing"]["rmsd"]
+    destabilizing_plddt_avg = df[df["mutation_type"]=="destabilizing"]["avg"]
+    destabilizing_rmsd = df[df["mutation_type"]=="destabilizing"]["rmsd"]
     
     plt.scatter(stabilizing_plddt_avg, stabilizing_rmsd, color="orange", label="Stabilizing variant")
     plt.scatter(destabilizing_plddt_avg, destabilizing_rmsd, color="red", label="Destabilizing variant")
@@ -55,16 +55,20 @@ def plot_correlation_coefficient_mt(df, output_file_name):
     plt.xlabel("PLDDT confidence")
     plt.ylabel("RMSD ($\AA$)")
     # plt.show()
-    plt.savefig("output_images/correlation_between_plddt_and_rmsd/{}.pdf".format(output_file_name), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+    plt.savefig("outputs/images/correlation_between_plddt_and_rmsd/{}.pdf".format(output_file_name), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
     plt.close()
 
+
+score_data_df = pd.read_csv("outputs/score_statistics/side_chain_analysis.csv")
+ssym_df = pd.read_csv("data/ssym_684_classified.csv") 
+
 # plotting correlation coefficient for wildtype proteins.
-wt_df = pd.read_excel("outputs/wt_mutation_plddt_statistics_0_neighbor.xlsx")
-plot_correlation_coefficient_wt(wt_df, "wild-type")
+unique_wt_pdb_ids_df = pd.DataFrame((ssym_df["pdb_id"]+ssym_df["chain_id"]).unique(), columns=["unique_wt_pdb_ids"])
+wt_pdbs_score_df = pd.merge(left=score_data_df, right=unique_wt_pdb_ids_df, how="inner", left_on="pdb_id", right_on="unique_wt_pdb_ids")
+plot_correlation_coefficient_wt(wt_pdbs_score_df, "wild-type")
 
 # plotting correlation coefficient for mutant proteins.
-ssym_df = pd.read_excel("data/ssym_classified_full.xlsx")[["inverse_pdb_id", "inverse_chain_id", "is_destabilizing"]]
-mt_df = pd.read_excel("outputs/mt_mutation_plddt_statistics_0_neighbor.xlsx")
-mt_df = pd.merge(left=mt_df, right=ssym_df, how="left", left_on="pdb_id", right_on="inverse_pdb_id")
-plot_correlation_coefficient_mt(mt_df, "variant")
-
+ssym_df["unique_mt_pdb_ids"] = ssym_df["inv_pdb_id"]+ssym_df["inv_chain_id"]
+unique_mt_pdb_ids_df = ssym_df[["unique_mt_pdb_ids", "mutation_type"]]
+mt_pdbs_score_df = pd.merge(left=score_data_df, right=unique_mt_pdb_ids_df, how="inner", left_on="pdb_id", right_on="unique_mt_pdb_ids")
+plot_correlation_coefficient_mt(mt_pdbs_score_df, "variant")

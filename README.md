@@ -23,3 +23,4 @@ Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein S
 * `python analyzers/plot_local_plddt_conf.py`
 * `python analyzers/compute_mutation_side_chain_analysis_scores.py`
 * `python analyzers/plot_mutation_side_chain_analysis_scores.py`
+* `python analyzers/compute_correlation_rmsd_and_plddt.py`
