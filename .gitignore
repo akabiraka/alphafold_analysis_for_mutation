@@ -128,14 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+data/*
 data/error/*
 data/fastas/*
 data/pdbs/*
 data/pdbs_clean/*
 data/alphafold2_predicted_pdbs/*
 data/alphafold2_predicted_pdbs_zipped/*
-data/for_*
 outputs/*
 output_all_scores/*
 output_plddt_scores/*
-data/*
+
