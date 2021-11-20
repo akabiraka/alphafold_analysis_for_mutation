@@ -176,32 +176,7 @@ def plot_mutation_site_vs_statistics_0():
     plt.show()
 # plot_mutation_site_vs_statistics_0() 
 
-def plot_wt_vs_mutation_site_in_mt_plddt_confidence(mt_plddt_statistics_df, ylabel):
-    # print(mt_plddt_statistics_df.head())
-    ssym_classified_full_df = pd.read_csv("data/ssym_684_classified.csv")
-    mt_plddt_statistics_df = mt_plddt_statistics_df.rename(columns={"pdb_id": "inv_pdb_id"})
-    mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_df.merge(right=ssym_classified_full_df[["pdb_id", "inv_pdb_id"]],
-                                                                   how="left", left_on="inv_pdb_id", right_on="inv_pdb_id", 
-                                                                   left_index=False, right_index=False,)  
-    # print(mt_plddt_statistics_with_wtpdbid_df.head())
-    print(mt_plddt_statistics_with_wtpdbid_df.groupby(by="pdb_id", sort=False).mean().head())
-    grouped_mt_plddt_statistics_with_wtpdbid_df = mt_plddt_statistics_with_wtpdbid_df.groupby(by="pdb_id", sort=False).mean()
-    
-    pdb_ids = grouped_mt_plddt_statistics_with_wtpdbid_df.index.values
-    mins = grouped_mt_plddt_statistics_with_wtpdbid_df["min"]
-    maxs = grouped_mt_plddt_statistics_with_wtpdbid_df["max"]
-    means = grouped_mt_plddt_statistics_with_wtpdbid_df["avg"]
-    stds = grouped_mt_plddt_statistics_with_wtpdbid_df["std"]
-    plt.errorbar(pdb_ids, means, stds, color="green", fmt=".", ecolor="lightgreen", elinewidth=4, label="Wildtype")
-    plt.errorbar(pdb_ids, means, yerr=[means-mins, maxs-means], fmt='.', color="green", ecolor='lightgreen', lw=1, capsize=2)
-    
-    plt.legend(loc="best")
-    plt.xlabel("Dataset (Wildtype)")
-    plt.xticks([], [])
-    plt.ylabel("Mutaion site PLDDT in variants ({})".format(ylabel))
-    # plt.show()
-    plt.savefig("output_images/wt_vs_mutation_site_in_mt_plddt_confidence_plots/{}.pdf".format(ylabel), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
-    plt.close()
+
     
 def get_plddt_confidence_score_for_all_WT_proteins(mt_plddt_statistics_df, 
                                                    statistics_name="median", 
@@ -328,7 +303,3 @@ def plot_plddt_confidence_score_for_all_WT_proteins_1():
     
 
 
-# for neighbor in range(4):
-#     plddt_stats_df = pd.read_csv("outputs/score_statistics/local_plddt_conf_{}_neighbor.csv".format(neighbor))
-#     plot_wt_vs_mutation_site_in_mt_plddt_confidence(plddt_stats_df, ylabel="{}-neighborhood".format(neighbor))
-    # break
