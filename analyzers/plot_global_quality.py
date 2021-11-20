@@ -97,7 +97,7 @@ def plot_error_bar_statistics_vs_seq_len(wt_pdbs_score_df, mt_pdbs_score_df, col
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     # plt.show()
-    plt.savefig("outputs/images/global_structure_quality/{}.pdf".format(filename), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+    plt.savefig("outputs/images/global_structure_quality/{}".format(filename), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
     plt.close()
             
 configs = [

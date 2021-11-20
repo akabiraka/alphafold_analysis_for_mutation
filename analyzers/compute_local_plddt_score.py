@@ -26,19 +26,19 @@ class PLDDTScore(object):
         Returns:
             dataframe, dataframe: unique_wt_pdb_ids_df, unique_mt_pdb_ids_df
         """
-        ssym_df = pd.read_excel("data/ssym_classified_full.xlsx") 
+        ssym_df = pd.read_csv("data/ssym_684_classified.csv") 
         if with_chain_id:
             # computing for each MT protein
             unique_wt_pdb_ids_df = pd.DataFrame((ssym_df["pdb_id"]+ssym_df["chain_id"]).unique(), columns=["unique_wt_pdb_ids"])
             # computing for each WT protein
-            unique_mt_pdb_ids_df = pd.DataFrame((ssym_df["inverse_pdb_id"]+ssym_df["inverse_chain_id"]).unique(), columns=["unique_mt_pdb_ids"])
+            unique_mt_pdb_ids_df = pd.DataFrame((ssym_df["inv_pdb_id"]+ssym_df["inv_chain_id"]).unique(), columns=["unique_mt_pdb_ids"])
             return unique_wt_pdb_ids_df, unique_mt_pdb_ids_df
         
         else:
             # computing for each MT protein
             unique_wt_pdb_ids_df = pd.DataFrame((ssym_df["pdb_id"]).unique(), columns=["unique_wt_pdb_ids"])
             # computing for each WT protein
-            unique_mt_pdb_ids_df = pd.DataFrame((ssym_df["inverse_pdb_id"]).unique(), columns=["unique_mt_pdb_ids"])
+            unique_mt_pdb_ids_df = pd.DataFrame((ssym_df["inv_pdb_id"]).unique(), columns=["unique_mt_pdb_ids"])
             return unique_wt_pdb_ids_df, unique_mt_pdb_ids_df
 
     def is_wild_type(self, pdb_id):
@@ -76,12 +76,12 @@ class PLDDTScore(object):
         Returns:
             DF: dataframe of (chain_id, mutant_reside_num)
         """
-        ssym_df = pd.read_excel("data/ssym_classified_full.xlsx") 
+        ssym_df = pd.read_csv("data/ssym_684_classified.csv") 
         if self.is_wild_type(pdb_id):
             mutation_site_df = ssym_df[ssym_df["pdb_id"]==pdb_id]["mutant_reside_num"]
             return mutation_site_df.unique().tolist()
         else:
-            mutation_site_df = ssym_df[ssym_df["inverse_pdb_id"]==pdb_id]["mutant_reside_num"]
+            mutation_site_df = ssym_df[ssym_df["inv_pdb_id"]==pdb_id]["mutant_reside_num"]
             return mutation_site_df.tolist()
         
     def plot_residue_plddt_dict(self, dict):
@@ -143,14 +143,14 @@ class PLDDTScore(object):
         # saving plddt scores
         # plddt_scores_df = pd.DataFrame(plddt_scores, columns=["pdb_alphafold_file", "residue_plddt_dict"])
         # plddt_scores_df.to_excel("output_plddt_scores/{}.xlsx".format(pdb_id), index=False)                       
-        with open("output_plddt_scores/{}{}.pkl".format(pdb_id.lower(), chain_id), "wb") as f:
+        with open("outputs/plddt_scores/{}{}.pkl".format(pdb_id.lower(), chain_id), "wb") as f:
             pickle.dump(plddt_scores, f)
                     
     def compute_plddts_of_all_proteins(self):
         """It is a caller function. For AlphaFold predicted proteins directory
         it calls compute_plddts_of_a_protein function.
         """
-        alphafold_predicted_pdb_dir = "data/pdbs_alphafold_predicted/"
+        alphafold_predicted_pdb_dir = "data/alphafold2_predicted_pdbs/"
         for pdb_alphafold_dir in listdir(alphafold_predicted_pdb_dir):
             pdb_id = pdb_alphafold_dir.split("_")[1]
             print(pdb_alphafold_dir.split("_")[1])
@@ -204,12 +204,15 @@ class PLDDTScore(object):
         """This is a caller function to compute plddt statistics on mutation 
         site for all proteins and save them.
         """
-        plddt_scores_dir="output_plddt_scores/"
-        wt_mutation_plddt_statistics_file = "outputs/wt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor)
-        mt_mutation_plddt_statistics_file = "outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(neighbor)
+        plddt_scores_dir="outputs/plddt_scores/"
+        local_plddt_conf_stat_file = "outputs/score_statistics/local_plddt_conf_{}_neighbor.csv".format(neighbor)
+        local_plddt_conf_stats = []
         
-        wt_mutation_site_plddt_statistics = []
-        mt_mutation_site_plddt_statistics = []
+        # wt_mutation_plddt_statistics_file = "outputs/score_statistics/wt_plddt_{}_neighbor.csv".format(neighbor)
+        # mt_mutation_plddt_statistics_file = "outputs/score_statistics/mt_plddt_{}_neighbor.csv".format(neighbor)
+        
+        # wt_local_plddt_conf_statistics = []
+        # mt_local_plddt_conf_statistics = []
         
         for plddt_score_file in listdir(plddt_scores_dir):
             pdb_id, chain_id = plddt_score_file[0:4].lower(), plddt_score_file[4]
@@ -219,25 +222,34 @@ class PLDDTScore(object):
             
             for mutation_site in mutation_sites:
                 min, max, avg, median, std = self.compute_mutation_site_statistics(int(mutation_site), plddt_scores, neighbor)
-                if self.is_wild_type(pdb_id):
-                    wt_mutation_site_plddt_statistics.append([pdb_id, chain_id, mutation_site, min, max, avg, median, std])
-                else:
-                    mt_mutation_site_plddt_statistics.append([pdb_id, chain_id, mutation_site, min, max, avg, median, std]) 
+                local_plddt_conf_stats.append([pdb_id+chain_id, mutation_site, min, max, avg, median, std])
+                # if self.is_wild_type(pdb_id):
+                #     wt_local_plddt_conf_statistics.append([pdb_id+chain_id, mutation_site, min, max, avg, median, std])
+                # else:
+                #     mt_local_plddt_conf_statistics.append([pdb_id+chain_id, mutation_site, min, max, avg, median, std]) 
                     
             #     break
             # break
 
-        wt_mutation_site_plddt_statistics_df = pd.DataFrame(wt_mutation_site_plddt_statistics, 
-                                                                    columns=["pdb_id", "chain_id", "mutation_site", "min", "max", "avg", "median", "std"])    
-        wt_mutation_site_plddt_statistics_df.to_excel(wt_mutation_plddt_statistics_file, index=False)
+        local_plddt_conf_stats_df = pd.DataFrame(local_plddt_conf_stats, 
+                                                                    columns=["pdb_id", "mutation_site", "min", "max", "avg", "median", "std"])    
+        local_plddt_conf_stats_df.to_csv(local_plddt_conf_stat_file, index=False)
+        
+        # wt_local_plddt_conf_statistics_df = pd.DataFrame(wt_local_plddt_conf_statistics, 
+        #                                                             columns=["pdb_id", "mutation_site", "min", "max", "avg", "median", "std"])    
+        # wt_local_plddt_conf_statistics_df.to_csv(wt_mutation_plddt_statistics_file, index=False)
 
-        mt_mutation_site_plddt_statistics_df = pd.DataFrame(mt_mutation_site_plddt_statistics, 
-                                                                    columns=["pdb_id", "chain_id", "mutation_site", "min", "max", "avg", "median", "std"])    
-        mt_mutation_site_plddt_statistics_df.to_excel(mt_mutation_plddt_statistics_file, index=False)
-            
-# plddt_score = PLDDTScore()
-# # plddt_score.compute_plddts_of_all_proteins()
-# plddt_score.compute_mutation_site_specific_plddt_statistics()
+        # mt_local_plddt_conf_statistics_df = pd.DataFrame(mt_local_plddt_conf_statistics, 
+        #                                                             columns=["pdb_id", "mutation_site", "min", "max", "avg", "median", "std"])    
+        # mt_local_plddt_conf_statistics_df.to_csv(mt_mutation_plddt_statistics_file, index=False)
+
+# run this to generate data
+plddt_score = PLDDTScore()
+plddt_score.compute_plddts_of_all_proteins()
+plddt_score.compute_mutation_site_specific_plddt_statistics(neighbor=0)
+plddt_score.compute_mutation_site_specific_plddt_statistics(neighbor=1)
+plddt_score.compute_mutation_site_specific_plddt_statistics(neighbor=2)
+plddt_score.compute_mutation_site_specific_plddt_statistics(neighbor=3)
 
 
 import unittest
@@ -247,7 +259,7 @@ class TestPLDDTScore(unittest.TestCase):
     
     @unittest.skipIf(True, "Takes time.")
     def test_parse_alphafold_pdb(self):
-        pdb_filepath = "data/pdbs_alphafold_predicted/prediction_1AMQ_e9684/rank_1_model_3_ptm_seed_0_unrelaxed.pdb"
+        pdb_filepath = "data/alphafold2_predicted_pdbs/prediction_1AMQ_e9684/rank_1_model_3_ptm_seed_0_unrelaxed.pdb"
         result = self.PLDDT_Score.parse_alphafold_pdb(pdb_filepath)
         print(result)
         self.assertTrue(True)
@@ -290,7 +302,7 @@ class TestPLDDTScore(unittest.TestCase):
             # print(self.PLDDT_Score.compute_mutation_site_statistics(mutation_site, plddt_scores, neighbor=3))
             self.assertTrue(True)
     
-    # @unittest.skipIf(True, "Takes time.")
+    @unittest.skipIf(True, "Takes time.")
     def test_compute_mutation_site_specific_plddt_statistics(self):
         self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=0)
         self.PLDDT_Score.compute_mutation_site_specific_plddt_statistics(neighbor=1)

@@ -8,9 +8,9 @@ from objects.Selector import ChainAndAminoAcidSelect
 from utils.CleanSlate import CleanSlate
 from Bio.PDB import *
 
-from GDTScore import GDTScore
-from RMSScore import RMSScore
-from TMScore import TMScore
+from objects.GDTScore import GDTScore
+from objects.RMSScore import RMSScore
+from objects.TMScore import TMScore
 
 input_file_path = "data/ssym_684_classified.csv"
 cln_pdb_dir = "data/pdbs_clean/"
