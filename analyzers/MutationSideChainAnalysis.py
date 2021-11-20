@@ -101,24 +101,26 @@ class MutationSideChainAnalysis(object):
         rmse = np.sqrt(mse)
         return rmse
         
-    def compute_all_mutation_side_chain_rmsd(self, file_path="outputs/mt_mutation_plddt_statistics_0_neighbor.xlsx"):
-        mutation_site_df = pd.read_excel(file_path)
+    def compute_all_mutation_side_chain_rmsd(self, inp_file_path, out_file_path):
+        mutation_site_df = pd.read_csv(inp_file_path)
         mutation_site_df["rmsd"] = 0.0
         # print(mutation_site_df.head())
         for i, row in mutation_site_df.iterrows():
             pdb_id = row["pdb_id"]
-            chain_id = row["chain_id"]
             mutation_site = int(row["mutation_site"])
-            target_pdb_file = "data/pdbs/{}{}.pdb".format(pdb_id, chain_id)
-            predicted_pdb_file = glob.glob("data/pdbs_alphafold_predicted/prediction_{}_*/rank_1_*_unrelaxed.pdb".format(pdb_id.upper()))[0]
-            # print(pdb_id, chain_id, mutation_site, target_pdb_file, predicted_pdb_file)
-            rmsd = self.compute_side_chain_rmsd_for_mutation_site_(target_pdb_file, predicted_pdb_file, mutation_site)
-            mutation_site_df.loc[i, "rmsd"] = rmsd
-            print(rmsd)
-            # break
+            target_pdb_file = "data/pdbs_clean/{}.pdb".format(pdb_id)
+            predicted_pdb_file_path = glob.glob("data/alphafold2_predicted_pdbs/prediction_{}_*/rank_1_*_unrelaxed.pdb".format(pdb_id[0:4]))
+            print(pdb_id[0:4], mutation_site, target_pdb_file, predicted_pdb_file_path)
+            if len(predicted_pdb_file_path) > 0:
+                predicted_pdb_file = predicted_pdb_file_path[0]
+                rmsd = self.compute_side_chain_rmsd_for_mutation_site_(target_pdb_file, predicted_pdb_file, mutation_site)
+                mutation_site_df.loc[i, "rmsd"] = rmsd
+                # print(rmsd)
+                # break
 
-        mutation_site_df.to_excel(file_path, index=False)    
+        mutation_site_df.to_csv(out_file_path, index=False)    
         # print(mutation_site_df.tail())
+
 
 import unittest
 class TestMutationSideChainAnalysis(unittest.TestCase):
@@ -146,10 +148,26 @@ class TestMutationSideChainAnalysis(unittest.TestCase):
         self.mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(file_path="outputs/mt_mutation_plddt_statistics_{}_neighbor.xlsx".format(0))
         # break
     
-    # @unittest.skipIf(True, "Takes time.")            
+    @unittest.skipIf(True, "Takes time.")            
     def test_plot(self):
         self.mutation_side_chain_analysis.plot()
         
 if __name__ == "__main__":
-    unittest.main()        
+    # unittest.main()   
+    # ssym_df = pd.read_csv("data/ssym_684_classified.csv") 
+    # local_plddt_conf_stat_df = pd.read_csv("outputs/score_statistics/local_plddt_conf_{}_neighbor.csv".format(0))
+    
+    # ssym_df["wt_pdb_id"] = ssym_df["pdb_id"]+ssym_df["chain_id"]
+    # unique_wt_pdb_ids_df = pd.DataFrame(ssym_df["wt_pdb_id"].unique(), columns=["wt_pdb_id"])
+    # ssym_df["mt_pdb_id"] = ssym_df["inv_pdb_id"]+ssym_df["inv_chain_id"]
+    # unique_mt_pdb_ids_df = ssym_df[["mt_pdb_id", "mutation_type"]]
+    
+    # wt_local_plddt_conf_stat_df = pd.merge(left=local_plddt_conf_stat_df, right=unique_wt_pdb_ids_df, how="inner", left_on="pdb_id", right_on="wt_pdb_id")
+    # mt_local_plddt_conf_stat_df = pd.merge(left=local_plddt_conf_stat_df, right=unique_mt_pdb_ids_df, how="inner", left_on="pdb_id", right_on="mt_pdb_id")
+    # print(wt_local_plddt_conf_stat_df.shape, mt_local_plddt_conf_stat_df.shape)
+    
+    mutation_side_chain_analysis =  MutationSideChainAnalysis()
+    mutation_side_chain_analysis.compute_all_mutation_side_chain_rmsd(inp_file_path="outputs/score_statistics/local_plddt_conf_0_neighbor.csv",
+                                                                      out_file_path="outputs/score_statistics/side_chain_analysis.csv")
+    # mutation_side_chain_analysis.plot()     
     
