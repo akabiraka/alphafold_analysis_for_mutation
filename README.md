@@ -16,3 +16,4 @@ Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein S
 ### Analysis
 
 * `python analyzers/compute_all_scores.py`
+* `python analyzers/compute_statistics.py`

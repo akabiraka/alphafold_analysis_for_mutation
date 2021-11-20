@@ -15,8 +15,8 @@ from TMScore import TMScore
 input_file_path = "data/ssym_684_classified.csv"
 cln_pdb_dir = "data/pdbs_clean/"
 af_pred_dir = "data/alphafold2_predicted_pdbs/"
-out_dir = "outputs/scoring/"
-n_proteins_to_skip = 307
+out_dir = "outputs/all_pdb_scores/"
+n_proteins_to_skip = 0
 n_proteins_to_evalutate = 10000
 dfs = pd.read_csv(input_file_path)
 
@@ -100,16 +100,16 @@ for i, row in dfs.iterrows():
     
     wild_cln_pdb_file=cln_pdb_dir+pdb_id+chain_id+".pdb"
     wild_af_pred_dir=glob.glob(af_pred_dir+"prediction_"+pdb_id+"_*/")
-    if len(wild_af_pred_dir)==0: continue # remove this line later
-    wild_af_pred_dir = wild_af_pred_dir[0]
-    generate_scores(pdb_id, chain_id, wild_cln_pdb_file, wild_af_pred_dir)
+    if len(wild_af_pred_dir)!=0: # remove this line later
+        wild_af_pred_dir = wild_af_pred_dir[0]
+        generate_scores(pdb_id, chain_id, wild_cln_pdb_file, wild_af_pred_dir)
     
     
     mutant_cln_pdb_file=cln_pdb_dir+mutant_pdb_id+mutant_chain_id+".pdb"
     mutant_af_pred_dir=glob.glob(af_pred_dir+"prediction_"+mutant_pdb_id+"_*/")
-    if len(mutant_af_pred_dir)==0: continue # remove this line later
-    mutant_af_pred_dir = mutant_af_pred_dir[0]
-    generate_scores(mutant_pdb_id, mutant_chain_id, mutant_cln_pdb_file, mutant_af_pred_dir)
+    if len(mutant_af_pred_dir)!=0: # remove this line later
+        mutant_af_pred_dir = mutant_af_pred_dir[0]
+        generate_scores(mutant_pdb_id, mutant_chain_id, mutant_cln_pdb_file, mutant_af_pred_dir)
     
     print()
     if i+1 == n_proteins_to_skip+n_proteins_to_evalutate: 
