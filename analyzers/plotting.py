@@ -177,6 +177,6 @@ for config in configs:
     # print(wt_pdbs_score_df.head(), mt_pdbs_score_df.head())
     
     plot_error_bar_statistics_vs_seq_len(wt_pdbs_score_df, mt_pdbs_score_df, column_name, filename, xlabel, ylabel)
-    break
+    # break
 
 

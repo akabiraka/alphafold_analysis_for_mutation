@@ -23,7 +23,7 @@ fastas_dir = "data/fastas/"
 CIF = "mmCif"
 input_file_path = "data/ssym_684_copy.xlsx"
 out_file_path = "data/ssym_684_classified.csv"
-n_proteins_to_skip = 233
+n_proteins_to_skip = 0
 n_proteins_to_evalutate = 10000
 
 # object initialization
@@ -64,6 +64,11 @@ if __name__=="__main__":
         wild_ss_type = PDBData.get_secondary_structure_at_residue(pdb_id, chain_id, cln_wild_pdb_file, mutation_site)
         mutant_ss_type = PDBData.get_secondary_structure_at_residue(inv_pdb_id, inv_chain_id, cln_mutant_pdb_file, mutation_site)
         
+        print(pdb_id, chain_id, inv_pdb_id, inv_chain_id)
+        dfs.loc[i, "pdb_id"] = pdb_id
+        dfs.loc[i, "chain_id"] = chain_id
+        dfs.loc[i, "inv_pdb_id"] = inv_pdb_id
+        dfs.loc[i, "inv_chain_id"] = inv_chain_id
         dfs.loc[i, "wild_seq_len"] = wild_seq_len 
         dfs.loc[i, "mutant_seq_len"] = mutant_seq_len
         dfs.loc[i, "wild_ss_type"] = wild_ss_type
