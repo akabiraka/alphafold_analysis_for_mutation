@@ -21,7 +21,10 @@ class RMSScore(object):
     def __get_CA_atom_coordinates(self, chain):
         atom_coords = []
         for residue in chain:
-            atom_coords.append(residue['CA'].get_coord())
+            if residue.has_id("CA"): atom_coords.append(residue['CA'].get_coord())
+            else: 
+                atom_coords.append(residue['C'].get_coord())
+                print("Report: CA is missing")
         return np.array(atom_coords)
                 
     def get_by_SVDSuperImposer(self, ref_pdb_filepath, ref_chain_id, sample_pdb_filepath, sample_chain_id):
@@ -58,12 +61,12 @@ class RMSScore(object):
 # rms_score = RMSScore()
 
 # 1mx4 prediction_1MX4_21f84 rank_10_model_4_ptm_seed_4_unrelaxed.pdb
-# ref_pdb_filepath = "data/pdbs/1mx4A.pdb"
-# sample_pdb_filepath = "data/pdbs_alphafold_predicted/prediction_1MX4_21f84/rank_10_model_4_ptm_seed_4_unrelaxed.pdb"
+# ref_pdb_filepath = "data/pdbs_clean/1briA.pdb"
+# sample_pdb_filepath = "data/tmp/rank_24_model_5_ptm_seed_1_unrelaxed.pdb"
 
 # # call the imposers
 # rms = rms_score.get_by_SuperImposer(ref_pdb_filepath, sample_pdb_filepath)
 # print(rms)
 
-# rms = rms_score.get_by_SVDSuperImposer(ref_pdb_filepath, sample_pdb_filepath)
+# rms = rms_score.get_by_SVDSuperImposer(ref_pdb_filepath, "A", sample_pdb_filepath, "A")
 # print(rms)

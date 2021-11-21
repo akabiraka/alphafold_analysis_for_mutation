@@ -136,6 +136,7 @@ def compute_mutation_site_specific_plddt_statistics(neighbor=0):
     local_plddt_conf_stats = []
     
     for plddt_score_file in os.listdir(plddt_scores_dir):
+        if plddt_score_file==".gitkeep": continue
         pdb_id, chain_id = plddt_score_file[0:4].lower(), plddt_score_file[4]
         print(pdb_id, chain_id)
         plddt_scores = __read_pickel(plddt_scores_dir+plddt_score_file)

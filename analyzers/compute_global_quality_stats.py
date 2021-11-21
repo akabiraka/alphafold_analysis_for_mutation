@@ -26,6 +26,7 @@ for score_type in score_types:
 
     score_data = []
     for file in os.listdir(inp_dir):
+        if file==".gitkeep": continue
         score_df = pd.read_csv(inp_dir+file)
         pdb_id, chain_id, seq_len, min, max, avg, std = get_statistics(score_df, score_type)
         score_data.append([pdb_id+chain_id, seq_len, min, max, avg, std])

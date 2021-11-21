@@ -16,7 +16,7 @@ input_file_path = "data/ssym_684_classified.csv"
 cln_pdb_dir = "data/pdbs_clean/"
 af_pred_dir = "data/alphafold2_predicted_pdbs/"
 out_dir = "outputs/all_pdb_scores/"
-n_proteins_to_skip = 0
+n_proteins_to_skip = 241
 n_proteins_to_evalutate = 10000
 dfs = pd.read_csv(input_file_path)
 
