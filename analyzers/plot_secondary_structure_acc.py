@@ -30,6 +30,8 @@ plt.errorbar(ss_names, means, stds, color="green", fmt=".", ecolor="lightgreen",
 plt.errorbar(ss_names, means, yerr=[means-mins, maxs-means], fmt='.', color="green", ecolor='salmon', lw=1, capsize=2)
 plt.xticks(rotation=45)
 plt.legend(loc="best")
+plt.xlabel("Secondary structure")
+plt.ylabel("Accuracy at mutation site")
 # plt.show()
 plt.savefig("outputs/images/secondary_structure_acc/acc_at_mutation_site.pdf", dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
 plt.close()

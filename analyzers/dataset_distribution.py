@@ -7,21 +7,26 @@ import pandas as pd
 
 def plot_col_histogram(filepath, colums, labels, xlabel, ylabel, output_filename, 
                        bins=15, save=False):
-    df = pd.read_excel(filepath)
+    df = pd.read_csv(filepath)
     for i, col_name in enumerate(colums):
         df[col_name].hist(bins=bins, grid=False, label=labels[i], alpha=0.5)
     plt.legend()
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if save:
-        plt.savefig("output_images/data_distribution/{}.pdf".format(output_filename), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
+        plt.savefig("outputs/images/data_distribution/{}.pdf".format(output_filename), dpi=300, format="pdf", bbox_inches='tight', pad_inches=0.0)
         plt.close()
     else: plt.show()
     
-plot_col_histogram("data/ssym_classified_full.xlsx", bins=30, save=True,
-                   labels=["Mutant-type", "Variant-type"],
-                   colums=["mutant_structure_seq_len", "wild_structure_seq_len"],
-                   xlabel="Sequence length", ylabel="Number of mutations", output_filename="mutation_vs_seq_len")
+plot_col_histogram("data/ssym_684_classified.csv", bins=40, save=True, labels=[""], colums=["wild_seq_len"],
+                   xlabel="Sequence length", ylabel="Number of mutations", output_filename="seq_len_vs_num_of_mutations")
+
+plot_col_histogram("data/ssym_684_classified.csv", bins=30, save=True, labels=[""], colums=["mutant_reside_num"],
+                   xlabel="Mutation site", ylabel="Number of mutations", output_filename="mutation_site_vs_num_of_mutations")
+
+plot_col_histogram("data/ssym_684_classified.csv", bins=40, save=True, labels=[""], colums=["ddG"],
+                   xlabel="$\Delta \Delta G (kcal/mol)$", ylabel="Number of mutations", output_filename="ddg_vs_num_of_mutations")
+
 
 def compute_data_distribution(input_file="data/ssym_downsampled_stabilizing.xlsx", output_file="data/stabilizing_downsampled_data_distribution.xlsx"):
     dfs = pd.read_excel(input_file)
