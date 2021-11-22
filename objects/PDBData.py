@@ -221,3 +221,8 @@ class PDBData(object):
         dssp_dict = DSSP(model, cln_pdb_file, dssp="mkdssp")
         ss = dssp_dict[chain_id,residue_id][2]
         return ss
+    
+    def get_residue_ids_dict(self, pdb_file, chain_id):
+        residues = PDBParser(QUIET=True).get_structure("", pdb_file)[0][chain_id].get_residues()
+        residue_ids_dict = {residue.id[1]:i for i, residue in enumerate(residues)}
+        return residue_ids_dict
