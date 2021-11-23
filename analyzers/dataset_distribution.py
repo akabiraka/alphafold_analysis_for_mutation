@@ -19,14 +19,20 @@ def plot_col_histogram(filepath, colums, labels, xlabel, ylabel, output_filename
     else: plt.show()
     
 plot_col_histogram("data/ssym_684_classified.csv", bins=40, save=True, labels=[""], colums=["wild_seq_len"],
-                   xlabel="Sequence length", ylabel="Number of mutations", output_filename="seq_len_vs_num_of_mutations")
+                   xlabel="Sequence length", ylabel="Number", output_filename="seq_len_vs_num_of_mutations")
 
 plot_col_histogram("data/ssym_684_classified.csv", bins=30, save=True, labels=[""], colums=["mutant_reside_num"],
-                   xlabel="Mutation site", ylabel="Number of mutations", output_filename="mutation_site_vs_num_of_mutations")
+                   xlabel="Mutation site", ylabel="Number", output_filename="mutation_site_vs_num_of_mutations")
 
 plot_col_histogram("data/ssym_684_classified.csv", bins=40, save=True, labels=[""], colums=["ddG"],
-                   xlabel="$\Delta \Delta G (kcal/mol)$", ylabel="Number of mutations", output_filename="ddg_vs_num_of_mutations")
+                   xlabel="$\Delta \Delta G (kcal/mol)$", ylabel="Number", output_filename="ddg_vs_num_of_mutations")
 
+# plot_col_histogram("data/ssym_684_classified.csv", bins=20, save=False, labels=[""], colums=["mutation_type"],
+#                    xlabel="Mutation type", ylabel="Number of mutations", output_filename="ddg_vs_num_of_mutations")
+
+# plot_col_histogram("data/ssym_684_classified.csv", bins=20, save=False, labels=[""], colums=["wild_ss_type"],
+#                    xlabel="Secondary strucutre types", ylabel="Number of mutations", output_filename="ddg_vs_num_of_mutations")
+  
 
 def compute_data_distribution(input_file="data/ssym_downsampled_stabilizing.xlsx", output_file="data/stabilizing_downsampled_data_distribution.xlsx"):
     dfs = pd.read_excel(input_file)

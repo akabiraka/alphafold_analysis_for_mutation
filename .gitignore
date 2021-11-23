@@ -138,4 +138,4 @@ data/alphafold2_predicted_pdbs_zipped/*
 outputs/*
 output_all_scores/*
 output_plddt_scores/*
-
+3rd_party_softwares/*

@@ -15,6 +15,7 @@ Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein S
 
 ### Analysis
 
+* `python analyzers/dataset_distribution.py`
 * `python analyzers/compute_global_quality_scores.py`
 * `python analyzers/compute_global_quality_stats.py`
 * `python analyzers/plot_global_quality.py`
@@ -28,3 +29,11 @@ Analysis of AlphaFold2 for Modeling Structures of Wildtype and Variant Protein S
 ### Data issues
 
 * Issue 1: 1briA's 1st residue is VAL which does not report CA atom, in that case consider C atom.
+
+### Other software usage
+
+* DSSP for secondary structure comparison.
+  * Homepage: https://swift.cmbi.umcn.nl/gv/dssp/
+  * Github link and installation guide: https://github.com/PDB-REDO/dssp
+* TMscore (Zhang lab) to compute the globabl structure similarities: TM-Score, GDT-TS, GDT-HA and MaxSub-Score.
+  * Homepage: https://zhanggroup.org/TM-score/
